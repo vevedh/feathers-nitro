@@ -1,0 +1,3 @@
+imports.autoImport = false
+typescript.tsConfig.exclude.0 = ../playground
+typescript.tsConfig.exclude.1 = ../.release-it.ts

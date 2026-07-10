@@ -1,0 +1,80 @@
+{
+  "name": "feathers-api",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Feathers api for Nuxt integration demo",
+  "contributors": [],
+  "homepage": "",
+  "bugs": {},
+  "keywords": [
+    "feathers"
+  ],
+  "main": "lib/client",
+  "files": [
+    "lib/**/*.d.ts",
+    "lib/**/*.shared.js",
+    "lib/client.js"
+  ],
+  "engines": {
+    "node": ">= 20.17.0"
+  },
+  "feathers": {
+    "language": "ts",
+    "packager": "pnpm",
+    "framework": "express",
+    "transports": [
+      "rest",
+      "websockets"
+    ],
+    "schema": "typebox"
+  },
+  "directories": {
+    "lib": "src",
+    "test": "test"
+  },
+  "scripts": {
+    "dev": "nodemon -x ts-node src/index.ts",
+    "compile": "shx rm -rf lib/ && tsc",
+    "start": "node lib/",
+    "prettier": "npx prettier \"**/*.ts\" --write",
+    "mocha": "cross-env NODE_ENV=test mocha test/ --require ts-node/register --recursive --extension .ts --exit",
+    "test": "pnpm run mocha",
+    "bundle:client": "pnpm run compile && pnpm pack --pack-destination ./public",
+    "test:types": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "@feathersjs/authentication": "^5.0.45",
+    "@feathersjs/authentication-client": "^5.0.45",
+    "@feathersjs/authentication-local": "^5.0.45",
+    "@feathersjs/configuration": "^5.0.45",
+    "@feathersjs/errors": "^5.0.45",
+    "@feathersjs/express": "^5.0.45",
+    "@feathersjs/feathers": "^5.0.45",
+    "@feathersjs/koa": "^5.0.45",
+    "@feathersjs/memory": "^5.0.45",
+    "@feathersjs/schema": "^5.0.45",
+    "@feathersjs/socketio": "^5.0.45",
+    "@feathersjs/transport-commons": "^5.0.45",
+    "@feathersjs/typebox": "^5.0.45",
+    "compression": "^1.8.1",
+    "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "@feathersjs/adapter-commons": "^5.0.45",
+    "@feathersjs/cli": "5.0.45",
+    "@feathersjs/rest-client": "^5.0.45",
+    "@gabortorma/antfu-eslint-config": "^2.4.2",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.19.21",
+    "axios": "^1.18.1",
+    "cross-env": "^7.0.3",
+    "mocha": "^10.8.2",
+    "nodemon": "^3.1.14",
+    "prettier": "^3.9.4",
+    "shx": "^0.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

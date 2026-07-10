@@ -1,0 +1,53 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.9 --activate
+          pnpm --version
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate package identity
+        run: pnpm check:identity
+
+      - name: Validate package-manager portability
+        run: pnpm check:portability
+
+      - name: Type-check
+        run: pnpm test:types
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test:all
+
+      - name: Validate package contents
+        run: pnpm pack:check

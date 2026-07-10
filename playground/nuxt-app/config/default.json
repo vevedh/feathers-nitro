@@ -1,0 +1,33 @@
+{
+  "host": "localhost",
+  "port": 3000,
+  "public": "../feathers-api/public/",
+  "origins": [
+    "http://localhost:3000"
+  ],
+  "paginate": {
+    "default": 10,
+    "max": 50
+  },
+  "authentication": {
+    "entity": "user",
+    "service": "users",
+    "secret": "N4mNOE1zdfQvaKRW2rWMrTTNweRzFG4R",
+    "authStrategies": [
+      "jwt",
+      "local"
+    ],
+    "jwtOptions": {
+      "header": {
+        "typ": "access"
+      },
+      "audience": "http://localhost",
+      "algorithm": "HS256",
+      "expiresIn": "1d"
+    },
+    "local": {
+      "usernameField": "userId",
+      "passwordField": "password"
+    }
+  }
+}
