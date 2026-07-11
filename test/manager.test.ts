@@ -274,9 +274,11 @@ describe('feathersInstanceManager', () => {
 
       const all = manager.getAll()
       expect(all).toHaveLength(3)
-      expect(all[0].options.basePath).toBe('/api/users')
-      expect(all[1].options.basePath).toBe('/api/products')
-      expect(all[2].options.basePath).toBe('/api/auth')
+      expect(all.map(entry => entry.options.basePath)).toEqual([
+        '/api/users',
+        '/api/products',
+        '/api/auth',
+      ])
     })
   })
 })

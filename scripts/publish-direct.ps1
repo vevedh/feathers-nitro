@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 
 $Package = '@vevedh/feathers-nitro'
-$Version = '0.4.4'
+$Version = '0.5.0'
 $Repository = 'https://github.com/vevedh/feathers-nitro.git'
 $Registry = 'https://registry.npmjs.org/'
 

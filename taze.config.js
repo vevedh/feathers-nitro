@@ -10,7 +10,7 @@ export default defineConfig({
     '**/coverage/**',
   ],
   exclude: [
-    // Runtime ABI-sensitive dependencies deliberately pinned for Nitro/H3 compatibility.
+    // Runtime ABI-sensitive dependencies: review and validate together.
     'h3',
     'nitropack',
     // Local workspace alias, not an npm package to bump.
@@ -21,13 +21,16 @@ export default defineConfig({
     'nuxi': 'minor',
     '@nuxt/schema': 'minor',
     '@nuxt/test-utils': 'minor',
-    '@nuxt/devtools': 'minor',
     'typescript': 'minor',
     'vitest': 'minor',
     'vue-tsc': 'minor',
     'release-it': 'minor',
+    'unbuild': 'minor',
     '@pinia/nuxt': 'patch',
-    'nuxt-feathers-pinia': 'patch',
+    'pinia': 'minor',
+    'vue': 'minor',
+    'vue-router': 'minor',
     '@gabortorma/nuxt-eslint-layer': 'patch',
+    '@gabortorma/antfu-eslint-config': 'patch',
   },
 })

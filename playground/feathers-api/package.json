@@ -16,7 +16,7 @@
     "lib/client.js"
   ],
   "engines": {
-    "node": ">= 20.17.0"
+    "node": "^22.12.0 || ^24.11.0 || >=26.0.0"
   },
   "feathers": {
     "language": "ts",
@@ -45,36 +45,36 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
-    "@feathersjs/authentication": "^5.0.45",
-    "@feathersjs/authentication-client": "^5.0.45",
-    "@feathersjs/authentication-local": "^5.0.45",
-    "@feathersjs/configuration": "^5.0.45",
-    "@feathersjs/errors": "^5.0.45",
-    "@feathersjs/express": "^5.0.45",
-    "@feathersjs/feathers": "^5.0.45",
-    "@feathersjs/koa": "^5.0.45",
-    "@feathersjs/memory": "^5.0.45",
-    "@feathersjs/schema": "^5.0.45",
-    "@feathersjs/socketio": "^5.0.45",
-    "@feathersjs/transport-commons": "^5.0.45",
-    "@feathersjs/typebox": "^5.0.45",
-    "compression": "^1.8.1",
-    "winston": "^3.19.0"
+    "@feathersjs/authentication": "catalog:",
+    "@feathersjs/authentication-client": "catalog:",
+    "@feathersjs/authentication-local": "catalog:",
+    "@feathersjs/configuration": "catalog:",
+    "@feathersjs/errors": "catalog:",
+    "@feathersjs/express": "catalog:",
+    "@feathersjs/feathers": "catalog:",
+    "@feathersjs/koa": "catalog:",
+    "@feathersjs/memory": "catalog:",
+    "@feathersjs/schema": "catalog:",
+    "@feathersjs/socketio": "catalog:",
+    "@feathersjs/transport-commons": "catalog:",
+    "@feathersjs/typebox": "catalog:",
+    "compression": "catalog:",
+    "winston": "catalog:"
   },
   "devDependencies": {
-    "@feathersjs/adapter-commons": "^5.0.45",
-    "@feathersjs/cli": "5.0.45",
-    "@feathersjs/rest-client": "^5.0.45",
-    "@gabortorma/antfu-eslint-config": "^2.4.2",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^22.19.21",
-    "axios": "^1.18.1",
-    "cross-env": "^7.0.3",
-    "mocha": "^10.8.2",
-    "nodemon": "^3.1.14",
-    "prettier": "^3.9.4",
-    "shx": "^0.4.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "@feathersjs/adapter-commons": "catalog:",
+    "@feathersjs/cli": "catalog:",
+    "@feathersjs/rest-client": "catalog:",
+    "@gabortorma/antfu-eslint-config": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "axios": "catalog:",
+    "cross-env": "catalog:",
+    "mocha": "catalog:",
+    "nodemon": "catalog:",
+    "prettier": "catalog:",
+    "shx": "catalog:",
+    "ts-node": "catalog:",
+    "typescript": "catalog:"
   }
 }

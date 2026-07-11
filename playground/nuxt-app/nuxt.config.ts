@@ -1,21 +1,25 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: '2024-04-03',
+  compatibilityDate: '2026-07-10',
 
   extends: [
     '@gabortorma/nuxt-eslint-layer',
+  ],
+
+  modules: [
+    '@pinia/nuxt',
   ],
 
   imports: {
     autoImport: true,
   },
 
-  modules: [
-    '@pinia/nuxt',
-    'nuxt-feathers-pinia',
-  ],
+  devtools: { enabled: true },
 
-  ssr: true,
+  runtimeConfig: {
+    public: {
+      feathersBaseUrl: '',
+    },
+  },
 
   nitro: {
     experimental: {
@@ -23,13 +27,8 @@ export default defineNuxtConfig({
     },
   },
 
-  vite: {
-    optimizeDeps: {
-      include: [
-        'feathers-pinia',
-      ],
-    },
+  typescript: {
+    strict: true,
+    typeCheck: true,
   },
-
-  devtools: { enabled: true },
 })

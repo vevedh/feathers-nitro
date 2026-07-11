@@ -1,75 +1,19 @@
-# Nuxt 3 Minimal Starter
+# Nuxt 4 playground
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+This workspace validates `@vevedh/feathers-nitro` against Nuxt 4 with
+Express, Socket.IO, Pinia 3, SSR authentication, and the native Nuxt 4
+`app/` directory structure.
 
-## Setup
+## Requirements
 
-Make sure to install the dependencies:
+- Node.js 22.12 or newer supported by Nuxt 4
+- pnpm 9.15.9
 
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+## Commands
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
+pnpm install --frozen-lockfile
+pnpm --filter nuxt-app dev
+pnpm --filter nuxt-app build
+pnpm --filter nuxt-app test:types
 ```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.

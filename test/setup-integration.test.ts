@@ -277,8 +277,10 @@ describe('multi-Instance Setup Integration', () => {
 
       const all = manager.getAll()
       expect(all).toHaveLength(2)
-      expect(all[0].options.metadata.service).toBe('authentication')
-      expect(all[1].options.metadata.service).toBe('user-management')
+      expect(all).toMatchObject([
+        { options: { metadata: { service: 'authentication' } } },
+        { options: { metadata: { service: 'user-management' } } },
+      ])
     })
 
     it('should support multi-tenant architecture pattern', async () => {

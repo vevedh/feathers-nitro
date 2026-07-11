@@ -1,15 +1,14 @@
 # Publishing `@vevedh/feathers-nitro`
 
-
 ## Automated GitHub + npm publication
 
-With authenticated GitHub CLI and npm sessions, the complete sequence can be executed with:
+With authenticated GitHub CLI and npm sessions, run:
 
 ```powershell
 ./scripts/bootstrap-and-publish.ps1
 ```
 
-This helper creates the public GitHub repository when it does not exist, pushes `main` and `v0.4.4`, verifies npm authentication, rejects an already-published version, and publishes directly to npm.
+The helper creates the public GitHub repository when needed, pushes `main` and `v0.5.0`, verifies npm authentication, rejects an already-published version, and publishes directly to npm.
 
 ## 1. Create the GitHub repository
 
@@ -21,15 +20,24 @@ Create the empty public repository:
 
 Do not initialize it with a README, license, or `.gitignore`; this project already contains them.
 
-## 2. Publish the fresh Git history
+## 2. Prepare and publish Git
 
-The delivered repository contains one initial commit on `main` and the `v0.4.4` tag.
+For a new repository, initialize the validated `0.5.0` baseline with:
 
 ```powershell
-git remote -v
-git status
+./scripts/reset-git.ps1
 git push -u origin main
-git push origin v0.4.4
+git push origin v0.5.0
+```
+
+For an existing repository, commit the Nuxt 4 migration normally, create the tag, and push:
+
+```powershell
+git add -A
+git commit -m "feat: migrate to Nuxt 4 and release v0.5.0"
+git tag -a v0.5.0 -m "@vevedh/feathers-nitro v0.5.0"
+git push origin main
+git push origin v0.5.0
 ```
 
 ## 3. Authenticate with npm
@@ -58,5 +66,5 @@ The PowerShell helper performs the Git push, npm authentication check, duplicate
 ## 5. Confirm the publication
 
 ```powershell
-npm view @vevedh/feathers-nitro@0.4.4 name version dist-tags.latest dist.tarball --registry=https://registry.npmjs.org/
+npm view @vevedh/feathers-nitro@0.5.0 name version dist-tags.latest dist.tarball --registry=https://registry.npmjs.org/
 ```

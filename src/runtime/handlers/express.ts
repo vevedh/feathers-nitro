@@ -1,7 +1,9 @@
 import type { FeathersError } from '@feathersjs/errors'
+import type { Application } from '@feathersjs/express'
 import type { NextFunction, Request, Response } from 'express'
-import { type Application, notFound } from '@feathersjs/express'
-import { createError, type H3Error, isError } from 'h3'
+import type { H3Error } from 'h3'
+import { notFound } from '@feathersjs/express'
+import { createError, isError } from 'h3'
 
 export function expressErrorHandler(app: Application) {
   function errorHandler(error: FeathersError | H3Error, req: Request, res: Response, next: NextFunction) {

@@ -7,12 +7,12 @@
 
 Nitro adapter plugin for FeathersJS APIs. It integrates Feathers applications with Nuxt/Nitro through Express, Koa, or Socket.IO adapters and supports multiple adapter instances.
 
-[🏀 Online playground](https://stackblitz.com/github/vevedh/feathers-nitro?file=playground%2Fnuxt-app%2Fapp.vue)
+[🏀 Online playground](https://stackblitz.com/github/vevedh/feathers-nitro?file=playground%2Fnuxt-app%2Fapp%2Fapp.vue)
 
 ## Requirements
 
-- Node.js 20 or newer
-- Nuxt 3 / Nitro
+- Node.js `^22.12.0`, `^24.11.0`, or `>=26.0.0`
+- Nuxt 4 / Nitro 2
 - FeathersJS 5
 
 ## Install
@@ -29,9 +29,9 @@ npm install --save-dev @vevedh/feathers-nitro
 yarn add --dev @vevedh/feathers-nitro
 ```
 
-## Usage with Nuxt 3
+## Usage with Nuxt 4
 
-Create a Nitro plugin in the `server/plugins` directory.
+Create a Nitro plugin in the `server/plugins` directory. Nuxt 4 keeps server code at the project root, while application UI code normally lives under `app/`.
 
 ### Express adapter
 
@@ -81,7 +81,7 @@ import { /* request handlers */ } from '@vevedh/feathers-nitro/handlers'
 import { /* setup helpers */ } from '@vevedh/feathers-nitro/setup'
 ```
 
-The [`playground`](./playground/) directory contains a larger example combining REST, Socket.IO, and authentication.
+The [`playground`](./playground/) directory contains a Nuxt 4 example combining REST, Socket.IO, Pinia 3, and authentication without the obsolete `nuxt-feathers-pinia` auto-import layer.
 
 ## Development
 
@@ -89,15 +89,19 @@ The [`playground`](./playground/) directory contains a larger example combining 
 corepack enable
 corepack prepare pnpm@9.15.9 --activate
 pnpm install --frozen-lockfile
-pnpm check:identity
-pnpm check:portability
-pnpm test:types
-pnpm lint
-pnpm test:all
-pnpm pack:check
+pnpm verify
 ```
 
-The identity check validates that package metadata and documentation still target `@vevedh/feathers-nitro`. The portability check rejects environment-specific registry URLs or credentials embedded in package-manager files.
+`pnpm verify` validates package identity, lockfile portability, the Vitest retry classifier, strict TypeScript, ESLint, Feathers/Nuxt integration tests, and the npm tarball contents.
+
+Dependency maintenance is based on Taze with a 14-day maturity period:
+
+```bash
+pnpm deps:check:recursive
+pnpm deps:update:safe:recursive
+```
+
+Review Nuxt, Nitro, H3, TypeScript, Vitest, and other major upgrades independently before regenerating the lockfile.
 
 ## Publishing
 
@@ -109,7 +113,7 @@ pnpm verify
 pnpm publish --access public --registry=https://registry.npmjs.org/ --no-git-checks
 ```
 
-Before the first publication, create the empty `vevedh/feathers-nitro` repository, authenticate with npm, and follow [`PUBLISHING.md`](./PUBLISHING.md). On Windows, `./scripts/publish-direct.ps1` validates the project, pushes `main` and `v0.4.4`, then publishes the public scoped package directly to npm.
+Before publication, create the `vevedh/feathers-nitro` repository, authenticate with npm, and follow [`PUBLISHING.md`](./PUBLISHING.md). On Windows, `./scripts/publish-direct.ps1` validates the project, pushes `main` and `v0.5.0`, then publishes the public scoped package directly to npm.
 
 ## Attribution
 

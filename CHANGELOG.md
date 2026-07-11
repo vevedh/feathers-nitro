@@ -4,6 +4,27 @@ All notable changes to this fork are documented in this file.
 
 ## [Unreleased]
 
+
+## [0.5.0] - 2026-07-10
+
+### Changed
+
+- Migrated the package and integration playground from Nuxt 3.21 to Nuxt 4.4.8 using a Taze-guided dependency review.
+- Upgraded the validated toolchain to Nitro 2.13.4, H3 1.15.11, `@nuxt/test-utils` 4.0.3, Vitest 4.1.9, Vue TSC 3.3.5, Unbuild 3.6.1, Pinia 3.0.4, and `@pinia/nuxt` 0.11.3.
+- Incremented the package version from `0.4.4` to `0.5.0` because Nuxt 4 and the new Node engine floor are compatibility-significant changes.
+- Migrated the playground UI to Nuxt 4's native `app/` directory and centralized workspace dependency versions with pnpm catalogs.
+- Replaced the obsolete `nuxt-feathers-pinia` layer with an explicit strict Feathers client plugin and Pinia 3 authentication store.
+- Reworked the isolated Vitest runner around asynchronous child processes for stable Vitest 4 E2E execution and live output.
+
+### Fixed
+
+- Removed the Nuxt `useModel` auto-import collision emitted by `nuxt-feathers-pinia@0.1.0`.
+- Adapted strict TypeScript assertions and Vitest 4 CLI options without weakening compiler rules.
+- Added an explicit Nitro compatibility date to eliminate environment-dependent Nitro preparation warnings.
+
+
+## [0.4.4] - 2026-07-10
+
 ### Changed
 
 - Renamed the npm package from `@gabortorma/feathers-nitro-adapter` to `@vevedh/feathers-nitro`.

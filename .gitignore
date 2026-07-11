@@ -5,6 +5,7 @@ node_modules
 *.log*
 
 # Temps
+**/node-compile-cache/
 .temp
 .tmp
 .cache

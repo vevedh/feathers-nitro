@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 $RepositoryName = 'vevedh/feathers-nitro'
 $RepositoryUrl = 'https://github.com/vevedh/feathers-nitro.git'
 $Package = '@vevedh/feathers-nitro'
-$Version = '0.4.4'
+$Version = '0.5.0'
 $Registry = 'https://registry.npmjs.org/'
 
 if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {

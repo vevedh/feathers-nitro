@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 
 $Remote = 'https://github.com/vevedh/feathers-nitro.git'
-$Version = '0.4.4'
+$Version = '0.5.0'
 
 if (Test-Path '.git') {
   Remove-Item -Recurse -Force '.git'

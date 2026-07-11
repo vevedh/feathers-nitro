@@ -40,6 +40,9 @@ jobs:
       - name: Validate package-manager portability
         run: pnpm check:portability
 
+      - name: Validate Vitest retry classifier
+        run: pnpm check:test-runner
+
       - name: Type-check
         run: pnpm test:types
 

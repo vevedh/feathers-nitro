@@ -1,7 +1,7 @@
 {
   "name": "@vevedh/feathers-nitro",
   "type": "module",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "packageManager": "pnpm@9.15.9",
   "description": "FeathersJS integration for Nuxt/Nitro with Express, Koa, Socket.IO, and multi-instance support",
   "author": "vevedh",
@@ -83,38 +83,37 @@
     "lint:workspaces:fix": "pnpm --dir playground/feathers-api exec eslint . --fix && pnpm --dir playground/nuxt-app prepare && pnpm --dir playground/nuxt-app exec eslint . --fix",
     "pack:check": "pnpm pack --pack-destination .pack-check",
     "check:portability": "node scripts/check-lockfile-portability.mjs",
-    "lint:root": "eslint --config eslint.config.mjs eslint.config.mjs taze.config.js scripts src test",
-    "lint:root:fix": "eslint --config eslint.config.mjs eslint.config.mjs taze.config.js scripts src test --fix",
+    "lint:root": "eslint --config eslint.config.mjs eslint.config.mjs nitro.config.ts taze.config.js scripts src test",
+    "lint:root:fix": "eslint --config eslint.config.mjs eslint.config.mjs nitro.config.ts taze.config.js scripts src test --fix",
     "check:test-runner": "node scripts/check-vitest-retry.mjs"
   },
   "dependencies": {
-    "@feathersjs/errors": "^5.0.45",
-    "@feathersjs/express": "^5.0.45",
-    "@feathersjs/feathers": "^5.0.45",
-    "@feathersjs/koa": "^5.0.45",
-    "@feathersjs/socketio": "^5.0.45",
+    "@feathersjs/errors": "^5.0.46",
+    "@feathersjs/express": "^5.0.46",
+    "@feathersjs/feathers": "^5.0.46",
+    "@feathersjs/koa": "^5.0.46",
+    "@feathersjs/socketio": "^5.0.46",
     "engine.io": "^6.6.9",
     "express": "^4.22.2",
-    "h3": "1.12.0",
-    "nitropack": "2.9.7"
+    "h3": "1.15.11",
+    "nitropack": "2.13.4"
   },
   "devDependencies": {
-    "@gabortorma/antfu-eslint-config": "^2.4.2",
-    "@gabortorma/nuxt-eslint-layer": "^0.2.6",
-    "@nuxt/devtools": "^1.7.0",
-    "@nuxt/schema": "^3.21.8",
-    "@nuxt/test-utils": "^3.23.0",
-    "@types/koa": "^2.15.2",
-    "@types/node": "^22.19.21",
-    "eslint": "^9.17.0",
-    "nuxi": "^3.35.2",
-    "nuxt": "^3.21.8",
-    "release-it": "^17.11.0",
-    "taze": "^19.14.1",
-    "typescript": "^5.9.3",
-    "unbuild": "^2.0.0",
-    "vitest": "^2.1.9",
-    "vue-tsc": "^2.2.12"
+    "@gabortorma/antfu-eslint-config": "3.2.0",
+    "@gabortorma/nuxt-eslint-layer": "1.0.0",
+    "@nuxt/schema": "4.4.8",
+    "@nuxt/test-utils": "4.0.3",
+    "@types/koa": "^3.0.3",
+    "@types/node": "^22.20.0",
+    "eslint": "9.39.5",
+    "nuxi": "3.36.0",
+    "nuxt": "4.4.8",
+    "release-it": "20.2.0",
+    "taze": "19.14.1",
+    "typescript": "5.9.3",
+    "unbuild": "3.6.1",
+    "vitest": "4.1.9",
+    "vue-tsc": "3.3.5"
   },
   "pnpm": {
     "updateConfig": {
@@ -132,6 +131,6 @@
     "url": "https://github.com/vevedh/feathers-nitro/issues"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": "^22.12.0 || ^24.11.0 || >=26.0.0"
   }
 }

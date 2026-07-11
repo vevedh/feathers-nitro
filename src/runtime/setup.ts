@@ -1,6 +1,7 @@
 import type { Application } from '@feathersjs/feathers'
 import type { NitroApp } from 'nitropack'
-import { FeathersInstanceManager, type FeathersInstanceOptions } from './manager'
+import type { FeathersInstanceOptions } from './manager'
+import { FeathersInstanceManager } from './manager'
 
 /**
  * Setup a single Feathers application instance

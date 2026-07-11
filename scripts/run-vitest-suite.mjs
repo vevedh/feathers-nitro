@@ -1,4 +1,4 @@
-import { spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { dirname, resolve } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
@@ -8,6 +8,7 @@ const scriptDirectory = dirname(fileURLToPath(import.meta.url))
 const projectRoot = resolve(scriptDirectory, '..')
 const vitestBin = resolve(projectRoot, 'node_modules/vitest/vitest.mjs')
 const maxPortAttempts = 3
+const testTimeoutMs = 240_000
 
 const testFiles = [
   'test/manager.test.ts',
@@ -20,29 +21,82 @@ const testFiles = [
   'test/socket.io.test.ts',
 ]
 
+/**
+ * Run one Vitest file in an isolated process while preserving live output.
+ *
+ * @param {string} testFile Relative test-file path.
+ * @returns {Promise<{
+ *   status: number | null
+ *   signal: NodeJS.Signals | null
+ *   stdout: string
+ *   stderr: string
+ *   error: Error | null
+ * }>} Process result.
+ */
 function runVitestFile(testFile) {
-  return spawnSync(process.execPath, [
-    vitestBin,
-    'run',
-    testFile,
-    '--maxWorkers=1',
-    '--minWorkers=1',
-  ], {
-    cwd: projectRoot,
-    encoding: 'utf8',
-    env: process.env,
-    maxBuffer: 32 * 1024 * 1024,
-    timeout: 180_000,
-  })
-}
+  return new Promise((resolveResult) => {
+    const child = spawn(process.execPath, [
+      vitestBin,
+      'run',
+      testFile,
+      '--maxWorkers=1',
+      '--no-file-parallelism',
+    ], {
+      cwd: projectRoot,
+      env: process.env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+    })
 
-function writeResult(result) {
-  if (result.stdout) {
-    process.stdout.write(result.stdout)
-  }
-  if (result.stderr) {
-    process.stderr.write(result.stderr)
-  }
+    let stdout = ''
+    let stderr = ''
+    let spawnError = null
+    let timedOut = false
+    let settled = false
+
+    child.stdout.setEncoding('utf8')
+    child.stderr.setEncoding('utf8')
+
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk
+      process.stdout.write(chunk)
+    })
+
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk
+      process.stderr.write(chunk)
+    })
+
+    child.on('error', (error) => {
+      spawnError = error
+    })
+
+    const timeout = setTimeout(() => {
+      timedOut = true
+      child.kill('SIGTERM')
+    }, testTimeoutMs)
+
+    child.on('close', (status, signal) => {
+      if (settled) {
+        return
+      }
+
+      settled = true
+      clearTimeout(timeout)
+
+      const error = timedOut
+        ? new Error(`Vitest timed out after ${testTimeoutMs}ms`)
+        : spawnError
+
+      resolveResult({
+        status,
+        signal,
+        stdout,
+        stderr,
+        error,
+      })
+    })
+  })
 }
 
 function isSuccessful(result) {
@@ -50,7 +104,7 @@ function isSuccessful(result) {
 }
 
 function hasRetryablePortCollision(result) {
-  const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`
+  const output = `${result.stdout}\n${result.stderr}`
   return isRetryablePortCollision(output)
 }
 
@@ -63,8 +117,7 @@ for (const testFile of testFiles) {
     const attemptSuffix = attempt === 1 ? '' : ` (retry ${attempt}/${maxPortAttempts})`
     console.log(`[vitest] ${testFile}${attemptSuffix}`)
 
-    const result = runVitestFile(testFile)
-    writeResult(result)
+    const result = await runVitestFile(testFile)
 
     if (isSuccessful(result)) {
       passed = true
