@@ -46,6 +46,10 @@ if (packageJson.packageManager !== EXPECTED_PACKAGE_MANAGER) {
 }
 
 
+if (rootNpmrc.trim().length === 0) {
+  violations.push('the root .npmrc must keep the workspace pnpm configuration')
+}
+
 for (const [workspaceName, workspaceNpmrc] of [
   ['playground/feathers-api', feathersApiNpmrc],
   ['playground/nuxt-app', nuxtAppNpmrc],
@@ -53,8 +57,10 @@ for (const [workspaceName, workspaceNpmrc] of [
   if (workspaceNpmrc === null) {
     violations.push(`${workspaceName}/.npmrc is required for pnpm 10 on StackBlitz WebContainers`)
   }
-  else if (workspaceNpmrc !== rootNpmrc) {
-    violations.push(`${workspaceName}/.npmrc must stay byte-for-byte synchronized with the root .npmrc`)
+  else if (workspaceNpmrc.length !== 0) {
+    violations.push(
+      `${workspaceName}/.npmrc must stay empty so it cannot alter the frozen workspace lockfile configuration`,
+    )
   }
 }
 

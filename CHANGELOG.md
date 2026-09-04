@@ -6,6 +6,8 @@ All notable changes to this fork are documented in this file.
 
 ### Fixed
 
+- Refined the StackBlitz pnpm 10 workaround: workspace-local `.npmrc` files now remain empty so they satisfy the WebContainer missing-config lookup without changing the configuration fingerprint enforced by `--frozen-lockfile`.
+- Consolidated the StackBlitz WebContainer documentation and extended `check:stackblitz` to reject non-empty workspace `.npmrc` files that could trigger `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`.
 - Fixed the second StackBlitz WebContainer bootstrap failure by adding workspace-local `.npmrc` files synchronized with the root config, working around pnpm's WebContainer `ENOENT` handling for missing optional config files.
 - Fixed StackBlitz WebContainer startup for pnpm-catalog workspaces by disabling automatic dependency installation and bootstrapping pnpm `10.34.5` explicitly before starting the Nuxt playground.
 - Added a `check:stackblitz` gate to prevent `ni`/`nr` package-manager auto-detection or pnpm-version drift from breaking the online playground again.

@@ -92,11 +92,9 @@ npx --yes pnpm@10.34.5 install --frozen-lockfile
 npx --yes pnpm@10.34.5 --filter nuxt-app dev
 ```
 
+The workspace-local `.npmrc` files under `playground/feathers-api` and `playground/nuxt-app` are intentionally present but empty. They work around a pnpm 10/WebContainer missing-config `ENOENT` issue without overriding the root pnpm configuration or changing the frozen lockfile contract. Keep pnpm policy in the root `.npmrc`; `pnpm check:stackblitz` enforces this boundary.
+
 If StackBlitz reports that `catalog:` is unsupported or that the lockfile is incompatible with the current pnpm, reload the project from a revision containing the current `.stackblitzrc`. Do not replace the pinned bootstrap with `ni`/`nr`, because package-manager auto-detection can select an incompatible pnpm in WebContainers.
-
-### StackBlitz WebContainer
-
-The online playground disables StackBlitz automatic dependency installation and boots with the exact package manager declared by this repository (`pnpm@10.34.5`). The two workspace-local `.npmrc` files intentionally mirror the root `.npmrc`: this is a compatibility workaround for an upstream pnpm/WebContainer bug where missing optional `.npmrc` files are surfaced as fatal `ENOENT` errors. Keep all three `.npmrc` files synchronized; `pnpm check:stackblitz` enforces that contract.
 
 ## Development
 
