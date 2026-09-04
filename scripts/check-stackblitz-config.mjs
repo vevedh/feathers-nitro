@@ -5,9 +5,16 @@ import { fileURLToPath } from 'node:url'
 
 const EXPECTED_PNPM_VERSION = '10.34.5'
 const EXPECTED_PACKAGE_MANAGER = `pnpm@${EXPECTED_PNPM_VERSION}`
-const EXPECTED_INSTALL_COMMAND = `npx --yes pnpm@${EXPECTED_PNPM_VERSION} install --frozen-lockfile`
-const EXPECTED_LOCKFILE_SETTINGS_OVERRIDE = '--config.ignore-lockfile-settings-checks=true'
-const EXPECTED_DEV_COMMAND = `npx --yes pnpm@${EXPECTED_PNPM_VERSION} --filter nuxt-app dev`
+const EXPECTED_START_COMMAND = 'node scripts/stackblitz-bootstrap.mjs'
+const REQUIRED_BOOTSTRAP_SNIPPETS = [
+  `const PNPM_VERSION = '${EXPECTED_PNPM_VERSION}'`,
+  "['install', '--global', '--prefix', pnpmPrefix, `pnpm@${PNPM_VERSION}`]",
+  "'--config.manage-package-manager-versions=false'",
+  "'--ignore-pnpmfile'",
+  "'--frozen-lockfile'",
+  "'--config.ignore-lockfile-settings-checks=true'",
+  "'--filter', 'nuxt-app', 'dev'",
+]
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
 const projectRoot = resolve(scriptDirectory, '..')
@@ -28,9 +35,17 @@ async function readWorkspaceNpmrc(relativePath) {
   }
 }
 
-const [packageContent, stackblitzContent, rootNpmrc, feathersApiNpmrc, nuxtAppNpmrc] = await Promise.all([
+const [
+  packageContent,
+  stackblitzContent,
+  bootstrapContent,
+  rootNpmrc,
+  feathersApiNpmrc,
+  nuxtAppNpmrc,
+] = await Promise.all([
   readUtf8('package.json'),
   readUtf8('.stackblitzrc'),
+  readUtf8('scripts/stackblitz-bootstrap.mjs'),
   readUtf8('.npmrc'),
   readWorkspaceNpmrc('playground/feathers-api/.npmrc'),
   readWorkspaceNpmrc('playground/nuxt-app/.npmrc'),
@@ -46,6 +61,9 @@ if (packageJson.packageManager !== EXPECTED_PACKAGE_MANAGER) {
   )
 }
 
+if (packageJson.scripts?.['stackblitz:bootstrap'] !== EXPECTED_START_COMMAND) {
+  violations.push(`package.json stackblitz:bootstrap must be "${EXPECTED_START_COMMAND}"`)
+}
 
 if (rootNpmrc.trim().length === 0) {
   violations.push('the root .npmrc must keep the workspace pnpm configuration')
@@ -69,28 +87,26 @@ if (stackblitzConfig.installDependencies !== false) {
   violations.push('.stackblitzrc must set installDependencies to false')
 }
 
-const startCommand = stackblitzConfig.startCommand
-if (typeof startCommand !== 'string') {
-  violations.push('.stackblitzrc startCommand must be a string')
+if (stackblitzConfig.startCommand !== EXPECTED_START_COMMAND) {
+  violations.push(`.stackblitzrc startCommand must be "${EXPECTED_START_COMMAND}"`)
 }
-else {
-  if (!startCommand.includes(EXPECTED_INSTALL_COMMAND)) {
-    violations.push(`.stackblitzrc must install with pinned pnpm ${EXPECTED_PNPM_VERSION}`)
-  }
 
-  if (!startCommand.includes(EXPECTED_LOCKFILE_SETTINGS_OVERRIDE)) {
-    violations.push(
-      '.stackblitzrc must ignore only environment-specific lockfile settings checks while keeping the lockfile frozen',
-    )
+for (const snippet of REQUIRED_BOOTSTRAP_SNIPPETS) {
+  if (!bootstrapContent.includes(snippet)) {
+    violations.push(`scripts/stackblitz-bootstrap.mjs is missing required contract: ${snippet}`)
   }
+}
 
-  if (!startCommand.includes(EXPECTED_DEV_COMMAND)) {
-    violations.push('.stackblitzrc must start the Nuxt playground with the pinned pnpm CLI')
-  }
+if (/\bnpx\b/u.test(bootstrapContent)) {
+  violations.push('StackBlitz bootstrap must not invoke pnpm through npx')
+}
 
-  if (/\b(?:ni|nr)\b/u.test(startCommand)) {
-    violations.push('.stackblitzrc must not use ni/nr package-manager auto-detection')
-  }
+if (/\.pnpm[/\\]\.tools/u.test(bootstrapContent)) {
+  violations.push('StackBlitz bootstrap must not depend on pnpm managed-tool paths')
+}
+
+if (/\b(?:ni|nr)\b/u.test(bootstrapContent)) {
+  violations.push('StackBlitz bootstrap must not use ni/nr package-manager auto-detection')
 }
 
 if (violations.length > 0) {
@@ -102,6 +118,7 @@ if (violations.length > 0) {
 }
 else {
   console.log(
-    `StackBlitz WebContainer bootstrap is pinned to pnpm ${EXPECTED_PNPM_VERSION} with a frozen lockfile and scoped settings-check override.`,
+    `StackBlitz bootstrap installs pnpm ${EXPECTED_PNPM_VERSION} under HOME/.local, disables pnpm self-management, `
+      + 'keeps the lockfile frozen, and starts the Nuxt playground deterministically.',
   )
 }
