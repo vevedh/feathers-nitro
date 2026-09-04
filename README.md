@@ -95,6 +95,8 @@ npm install --global --prefix "$HOME/.local" pnpm@10.34.5
 
 Disabling `manage-package-manager-versions` is intentional in WebContainers. pnpm 10 otherwise follows the root `packageManager` field by launching a managed copy below `~/.pnpm/.tools`, a path that currently fails during package materialization in StackBlitz. Installing pnpm below `$HOME/.local` and invoking that executable directly avoids the managed-tool path while keeping the repository version pin.
 
+Before the frozen install, the bootstrap also creates the root, `playground/feathers-api`, and `playground/nuxt-app` `node_modules` directories. This is a WebContainer compatibility guard for pnpm's realpath/linking phase; it does not change dependency resolution or the checked-in lockfile.
+
 The workspace-local `.npmrc` files under `playground/feathers-api` and `playground/nuxt-app` are intentionally present but empty. They work around a pnpm 10/WebContainer missing-config `ENOENT` issue without overriding the root pnpm configuration. `--ignore-pnpmfile` likewise prevents optional pnpm hook-file probing from becoming fatal in the WebContainer compatibility layer.
 
 StackBlitz alone uses `--config.ignore-lockfile-settings-checks=true` while retaining `--frozen-lockfile`. This skips only environment-specific lockfile-settings fingerprint drift; dependency specifiers and locked resolutions remain frozen. Local development and CI continue to use ordinary frozen installs with all lockfile settings checks enabled.

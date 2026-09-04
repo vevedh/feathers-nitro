@@ -14,6 +14,10 @@ const REQUIRED_BOOTSTRAP_SNIPPETS = [
   "'--frozen-lockfile'",
   "'--config.ignore-lockfile-settings-checks=true'",
   "'--filter', 'nuxt-app', 'dev'",
+  "join(projectRoot, 'playground', 'feathers-api', 'node_modules')",
+  "join(projectRoot, 'playground', 'nuxt-app', 'node_modules')",
+  "process.env.STACKBLITZ_BOOTSTRAP_DRY_RUN !== '1'",
+  'await mkdir(modulesDirectory, { recursive: true })',
 ]
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
@@ -119,6 +123,7 @@ if (violations.length > 0) {
 else {
   console.log(
     `StackBlitz bootstrap installs pnpm ${EXPECTED_PNPM_VERSION} under HOME/.local, disables pnpm self-management, `
-      + 'keeps the lockfile frozen, and starts the Nuxt playground deterministically.',
+      + 'keeps the lockfile frozen, precreates workspace node_modules paths, '
+      + 'and starts the Nuxt playground deterministically.',
   )
 }
