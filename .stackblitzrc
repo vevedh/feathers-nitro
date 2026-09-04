@@ -1,4 +1,4 @@
 {
   "installDependencies": false,
-  "startCommand": "npx --yes pnpm@10.34.5 install --frozen-lockfile && npx --yes pnpm@10.34.5 --filter nuxt-app dev"
+  "startCommand": "npx --yes pnpm@10.34.5 install --frozen-lockfile --config.ignore-lockfile-settings-checks=true && npx --yes pnpm@10.34.5 --filter nuxt-app dev"
 }

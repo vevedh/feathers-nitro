@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 const EXPECTED_PNPM_VERSION = '10.34.5'
 const EXPECTED_PACKAGE_MANAGER = `pnpm@${EXPECTED_PNPM_VERSION}`
 const EXPECTED_INSTALL_COMMAND = `npx --yes pnpm@${EXPECTED_PNPM_VERSION} install --frozen-lockfile`
+const EXPECTED_LOCKFILE_SETTINGS_OVERRIDE = '--config.ignore-lockfile-settings-checks=true'
 const EXPECTED_DEV_COMMAND = `npx --yes pnpm@${EXPECTED_PNPM_VERSION} --filter nuxt-app dev`
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
@@ -77,6 +78,12 @@ else {
     violations.push(`.stackblitzrc must install with pinned pnpm ${EXPECTED_PNPM_VERSION}`)
   }
 
+  if (!startCommand.includes(EXPECTED_LOCKFILE_SETTINGS_OVERRIDE)) {
+    violations.push(
+      '.stackblitzrc must ignore only environment-specific lockfile settings checks while keeping the lockfile frozen',
+    )
+  }
+
   if (!startCommand.includes(EXPECTED_DEV_COMMAND)) {
     violations.push('.stackblitzrc must start the Nuxt playground with the pinned pnpm CLI')
   }
@@ -95,6 +102,6 @@ if (violations.length > 0) {
 }
 else {
   console.log(
-    `StackBlitz WebContainer bootstrap is deterministic and pinned to pnpm ${EXPECTED_PNPM_VERSION}.`,
+    `StackBlitz WebContainer bootstrap is pinned to pnpm ${EXPECTED_PNPM_VERSION} with a frozen lockfile and scoped settings-check override.`,
   )
 }

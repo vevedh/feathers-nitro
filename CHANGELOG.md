@@ -6,11 +6,8 @@ All notable changes to this fork are documented in this file.
 
 ### Fixed
 
-- Refined the StackBlitz pnpm 10 workaround: workspace-local `.npmrc` files now remain empty so they satisfy the WebContainer missing-config lookup without changing the configuration fingerprint enforced by `--frozen-lockfile`.
-- Consolidated the StackBlitz WebContainer documentation and extended `check:stackblitz` to reject non-empty workspace `.npmrc` files that could trigger `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`.
-- Fixed the second StackBlitz WebContainer bootstrap failure by adding workspace-local `.npmrc` files synchronized with the root config, working around pnpm's WebContainer `ENOENT` handling for missing optional config files.
-- Fixed StackBlitz WebContainer startup for pnpm-catalog workspaces by disabling automatic dependency installation and bootstrapping pnpm `10.34.5` explicitly before starting the Nuxt playground.
-- Added a `check:stackblitz` gate to prevent `ni`/`nr` package-manager auto-detection or pnpm-version drift from breaking the online playground again.
+- Stabilized the StackBlitz WebContainer bootstrap around pinned `pnpm@10.34.5`: automatic dependency installation is disabled, workspace-local `.npmrc` placeholders remain empty, and the repository lockfile stays frozen while only the WebContainer-specific lockfile-settings fingerprint check is bypassed.
+- Added a `check:stackblitz` release gate that prevents package-manager auto-detection, pnpm-version drift, non-empty workspace `.npmrc` files, or loss of the scoped frozen-lockfile override.
 - Removed the final `style/max-len` warning from `check-feathers-suite` after the complete Windows verification passed through all Express/Koa/Socket.IO integration suites and `pack:check`.
 - Normalized the Patch 012 Feathers-suite guard and security regression test to satisfy the repository max-line-length and lowercase test-title lint contracts discovered by the full Windows `pnpm verify` gate.
 

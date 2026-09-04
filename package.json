@@ -60,7 +60,7 @@
   "scripts": {
     "prepack": "unbuild",
     "dev:nuxt": "pnpm --filter nuxt-app dev",
-    "stackblitz:install": "npx --yes pnpm@10.34.5 install --frozen-lockfile",
+    "stackblitz:install": "npx --yes pnpm@10.34.5 install --frozen-lockfile --config.ignore-lockfile-settings-checks=true",
     "stackblitz:dev": "npx --yes pnpm@10.34.5 --filter nuxt-app dev",
     "dev:api": "pnpm --filter feathers-api dev",
     "prerelease": "pnpm check:identity && pnpm check:portability && pnpm check:feathers-suite && pnpm check:stackblitz && pnpm test:types && pnpm lint && pnpm test:all",
