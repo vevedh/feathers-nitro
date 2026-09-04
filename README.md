@@ -94,6 +94,10 @@ npx --yes pnpm@10.34.5 --filter nuxt-app dev
 
 If StackBlitz reports that `catalog:` is unsupported or that the lockfile is incompatible with the current pnpm, reload the project from a revision containing the current `.stackblitzrc`. Do not replace the pinned bootstrap with `ni`/`nr`, because package-manager auto-detection can select an incompatible pnpm in WebContainers.
 
+### StackBlitz WebContainer
+
+The online playground disables StackBlitz automatic dependency installation and boots with the exact package manager declared by this repository (`pnpm@10.34.5`). The two workspace-local `.npmrc` files intentionally mirror the root `.npmrc`: this is a compatibility workaround for an upstream pnpm/WebContainer bug where missing optional `.npmrc` files are surfaced as fatal `ENOENT` errors. Keep all three `.npmrc` files synchronized; `pnpm check:stackblitz` enforces that contract.
+
 ## Development
 
 ```bash

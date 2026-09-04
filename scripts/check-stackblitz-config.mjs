@@ -15,9 +15,24 @@ async function readUtf8(relativePath) {
   return readFile(resolve(projectRoot, relativePath), 'utf8')
 }
 
-const [packageContent, stackblitzContent] = await Promise.all([
+async function readWorkspaceNpmrc(relativePath) {
+  try {
+    return await readUtf8(relativePath)
+  }
+  catch (error) {
+    if (error && typeof error === 'object' && error.code === 'ENOENT') {
+      return null
+    }
+    throw error
+  }
+}
+
+const [packageContent, stackblitzContent, rootNpmrc, feathersApiNpmrc, nuxtAppNpmrc] = await Promise.all([
   readUtf8('package.json'),
   readUtf8('.stackblitzrc'),
+  readUtf8('.npmrc'),
+  readWorkspaceNpmrc('playground/feathers-api/.npmrc'),
+  readWorkspaceNpmrc('playground/nuxt-app/.npmrc'),
 ])
 
 const packageJson = JSON.parse(packageContent)
@@ -28,6 +43,19 @@ if (packageJson.packageManager !== EXPECTED_PACKAGE_MANAGER) {
   violations.push(
     `package.json packageManager must be ${EXPECTED_PACKAGE_MANAGER}, got ${packageJson.packageManager ?? 'missing'}`,
   )
+}
+
+
+for (const [workspaceName, workspaceNpmrc] of [
+  ['playground/feathers-api', feathersApiNpmrc],
+  ['playground/nuxt-app', nuxtAppNpmrc],
+]) {
+  if (workspaceNpmrc === null) {
+    violations.push(`${workspaceName}/.npmrc is required for pnpm 10 on StackBlitz WebContainers`)
+  }
+  else if (workspaceNpmrc !== rootNpmrc) {
+    violations.push(`${workspaceName}/.npmrc must stay byte-for-byte synchronized with the root .npmrc`)
+  }
 }
 
 if (stackblitzConfig.installDependencies !== false) {

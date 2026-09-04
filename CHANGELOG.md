@@ -6,6 +6,7 @@ All notable changes to this fork are documented in this file.
 
 ### Fixed
 
+- Fixed the second StackBlitz WebContainer bootstrap failure by adding workspace-local `.npmrc` files synchronized with the root config, working around pnpm's WebContainer `ENOENT` handling for missing optional config files.
 - Fixed StackBlitz WebContainer startup for pnpm-catalog workspaces by disabling automatic dependency installation and bootstrapping pnpm `10.34.5` explicitly before starting the Nuxt playground.
 - Added a `check:stackblitz` gate to prevent `ni`/`nr` package-manager auto-detection or pnpm-version drift from breaking the online playground again.
 - Removed the final `style/max-len` warning from `check-feathers-suite` after the complete Windows verification passed through all Express/Koa/Socket.IO integration suites and `pack:check`.
