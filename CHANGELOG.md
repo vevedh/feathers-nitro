@@ -6,6 +6,8 @@ All notable changes to this fork are documented in this file.
 
 ### Fixed
 
+- Fixed StackBlitz WebContainer startup for pnpm-catalog workspaces by disabling automatic dependency installation and bootstrapping pnpm `10.34.5` explicitly before starting the Nuxt playground.
+- Added a `check:stackblitz` gate to prevent `ni`/`nr` package-manager auto-detection or pnpm-version drift from breaking the online playground again.
 - Removed the final `style/max-len` warning from `check-feathers-suite` after the complete Windows verification passed through all Express/Koa/Socket.IO integration suites and `pack:check`.
 - Normalized the Patch 012 Feathers-suite guard and security regression test to satisfy the repository max-line-length and lowercase test-title lint contracts discovered by the full Windows `pnpm verify` gate.
 

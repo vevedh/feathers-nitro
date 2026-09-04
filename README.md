@@ -83,6 +83,17 @@ import { /* setup helpers */ } from '@vevedh/feathers-nitro/setup'
 
 The [`playground`](./playground/) directory contains a Nuxt 4 example combining REST, Socket.IO, Pinia 3, and authentication without the obsolete `nuxt-feathers-pinia` auto-import layer.
 
+### StackBlitz WebContainer
+
+StackBlitz automatic dependency installation is disabled because the workspace uses pnpm catalogs. The project bootstraps the exact pnpm version declared by the repository before installing dependencies and starting the Nuxt playground.
+
+```bash
+npx --yes pnpm@10.34.5 install --frozen-lockfile
+npx --yes pnpm@10.34.5 --filter nuxt-app dev
+```
+
+If StackBlitz reports that `catalog:` is unsupported or that the lockfile is incompatible with the current pnpm, reload the project from a revision containing the current `.stackblitzrc`. Do not replace the pinned bootstrap with `ni`/`nr`, because package-manager auto-detection can select an incompatible pnpm in WebContainers.
+
 ## Development
 
 ```bash
