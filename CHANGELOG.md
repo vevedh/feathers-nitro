@@ -4,6 +4,26 @@ All notable changes to this fork are documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Removed the final `style/max-len` warning from `check-feathers-suite` after the complete Windows verification passed through all Express/Koa/Socket.IO integration suites and `pack:check`.
+- Normalized the Patch 012 Feathers-suite guard and security regression test to satisfy the repository max-line-length and lowercase test-title lint contracts discovered by the full Windows `pnpm verify` gate.
+
+### Changed
+
+- Upgraded the coordinated FeathersJS v5 dependency train from `5.0.46` to `5.0.49` across the package, playground catalogs, importers, and lockfile snapshots.
+- Added `check:feathers-suite` to reject mixed Feathers versions or incomplete lockfile integrity metadata before release and during `pnpm verify`.
+- Added a playground regression test that rejects an unknown `$where` operator hidden inside nested `$or` arrays.
+- Upgraded the pinned package manager from pnpm `9.15.9` to pnpm `10.34.5`, moving the project back onto a supported pnpm major with the 2026 integrity/path-traversal fixes.
+- Upgraded the standalone `nuxi` compatibility CLI from `3.36.0` to `3.37.0`; the published `nuxi` package has no runtime dependencies, so this update does not perturb the Nuxt/Nitro graph.
+- Added a pnpm-level 14-day `minimumReleaseAge` policy and an explicit dependency build-script allowlist for `esbuild`, `@parcel/watcher`, and `unrs-resolver`.
+- Kept Nitro `2.13.4` and H3 `1.15.11` deliberately pinned while H3 2 remains a separate compatibility line.
+
+### Security
+
+- Includes the FeathersJS 5.0.49 `adapter-commons` fix that validates query operators nested inside arrays.
+- Extended `check:portability` to reject pnpm lockfile package entries that do not carry a SHA-512 integrity value.
+
 
 ## [0.5.0] - 2026-07-10
 

@@ -13,7 +13,7 @@ Nitro adapter plugin for FeathersJS APIs. It integrates Feathers applications wi
 
 - Node.js `^22.12.0`, `^24.11.0`, or `>=26.0.0`
 - Nuxt 4 / Nitro 2
-- FeathersJS 5
+- FeathersJS `^5.0.49`
 
 ## Install
 
@@ -87,12 +87,12 @@ The [`playground`](./playground/) directory contains a Nuxt 4 example combining 
 
 ```bash
 corepack enable
-corepack prepare pnpm@9.15.9 --activate
+corepack prepare pnpm@10.34.5 --activate
 pnpm install --frozen-lockfile
 pnpm verify
 ```
 
-`pnpm verify` validates package identity, lockfile portability, the Vitest retry classifier, strict TypeScript, ESLint, Feathers/Nuxt integration tests, and the npm tarball contents.
+`pnpm verify` validates package identity, lockfile portability, the coordinated FeathersJS 5.0.49 dependency train, the Vitest retry classifier, strict TypeScript, ESLint, Feathers/Nuxt integration tests, and the npm tarball contents.
 
 Dependency maintenance is based on Taze with a 14-day maturity period:
 
@@ -101,7 +101,9 @@ pnpm deps:check:recursive
 pnpm deps:update:safe:recursive
 ```
 
-Review Nuxt, Nitro, H3, TypeScript, Vitest, and other major upgrades independently before regenerating the lockfile.
+pnpm enforces the same 14-day maturity window when resolving new versions. Dependency install scripts are denied by default except for the reviewed native/build helpers required by this workspace (`esbuild`, `@parcel/watcher`, and `unrs-resolver`).
+
+Review Nuxt, Nitro, H3, TypeScript, Vitest, Feathers, and other coordinated or major upgrades independently before regenerating the lockfile.
 
 ## Publishing
 

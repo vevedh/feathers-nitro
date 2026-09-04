@@ -28,7 +28,7 @@ jobs:
       - name: Enable pinned pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@9.15.9 --activate
+          corepack prepare pnpm@10.34.5 --activate
           pnpm --version
 
       - name: Install dependencies

@@ -7,7 +7,7 @@ Express, Socket.IO, Pinia 3, SSR authentication, and the native Nuxt 4
 ## Requirements
 
 - Node.js 22.12 or newer supported by Nuxt 4
-- pnpm 9.15.9
+- pnpm 10.34.5
 
 ## Commands
 
