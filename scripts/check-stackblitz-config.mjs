@@ -9,17 +9,21 @@ const EXPECTED_START_COMMAND = 'node scripts/stackblitz-bootstrap.mjs'
 const REQUIRED_BOOTSTRAP_SNIPPETS = [
   "const runtimeRoot = join(projectRoot, '.stackblitz-runtime')",
   "const runtimeModulesDirectory = join(runtimeRoot, 'node_modules')",
+  "const NUXT_ESLINT_LAYER_NAME = '@gabortorma/nuxt-eslint-layer'",
   "const lockfilePath = join(projectRoot, 'pnpm-lock.yaml')",
   "parseImporterVersions(lockfileContent, '.')",
   "parseImporterVersions(lockfileContent, 'playground/nuxt-app')",
   "parseImporterVersions(lockfileContent, 'playground/feathers-api')",
   "addDependencies(runtimeDependencies, rootManifest, rootLockedVersions, ['dependencies'])",
-  "addDependencies(runtimeDependencies, nuxtAppManifest, nuxtLockedVersions, ['dependencies', 'devDependencies'])",
+  "(dependencyName) => dependencyName !== NUXT_ESLINT_LAYER_NAME",
   "addDependencies(runtimeDependencies, feathersApiManifest, feathersLockedVersions, ['dependencies'])",
   'const NPM_INSTALL_ARGS = [',
   "'--package-lock=false'",
   "'--legacy-peer-deps'",
   "await run('npm', NPM_INSTALL_ARGS, runtimeRoot)",
+  "async function createNuxtEslintLayerShim(version)",
+  "main: './nuxt.config.ts'",
+  "await createNuxtEslintLayerShim(nuxtEslintLayerVersion)",
   "await symlink(relative(projectRoot, runtimeModulesDirectory), rootModulesDirectory, 'dir')",
   "await symlink(relative(nuxtAppRoot, runtimeModulesDirectory), nuxtAppModulesDirectory, 'dir')",
   "await symlink(relative(runtimeModulesDirectory, feathersApiRoot), feathersApiLink, 'dir')",
@@ -101,6 +105,16 @@ if (!gitignoreContent.split(/\r?\n/u).includes('.stackblitz-runtime/')) {
 
 if (!feathersApiNpmrcAbsent || !nuxtAppNpmrcAbsent) {
   violations.push('obsolete playground-local .npmrc placeholders must be removed')
+}
+
+
+const rootRuntimeSetMatch = /const ROOT_DEV_RUNTIME_PACKAGES = new Set\(\[([\s\S]*?)\]\)/u.exec(bootstrapContent)
+if (rootRuntimeSetMatch?.[1].includes("'@gabortorma/nuxt-eslint-layer'")) {
+  violations.push('@gabortorma/nuxt-eslint-layer must not be installed by npm in StackBlitz')
+}
+
+if (!bootstrapContent.includes("typeCheck: true")) {
+  violations.push('StackBlitz tooling-layer shim must preserve TypeScript type checking')
 }
 
 for (const snippet of REQUIRED_BOOTSTRAP_SNIPPETS) {

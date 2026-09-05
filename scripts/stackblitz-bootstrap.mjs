@@ -20,13 +20,15 @@ const nuxtAppPackagePath = join(nuxtAppRoot, 'package.json')
 const feathersApiPackagePath = join(feathersApiRoot, 'package.json')
 
 const ROOT_DEV_RUNTIME_PACKAGES = new Set([
-  '@gabortorma/nuxt-eslint-layer',
   '@types/node',
   'nuxi',
   'nuxt',
   'typescript',
   'vue-tsc',
 ])
+
+const NUXT_ESLINT_LAYER_NAME = '@gabortorma/nuxt-eslint-layer'
+const NUXT_ESLINT_LAYER_ROOT = join(runtimeModulesDirectory, '@gabortorma', 'nuxt-eslint-layer')
 
 const NPM_INSTALL_ARGS = [
   'install',
@@ -219,6 +221,11 @@ async function buildStandaloneRuntimeManifest() {
   const nuxtLockedVersions = parseImporterVersions(lockfileContent, 'playground/nuxt-app')
   const feathersLockedVersions = parseImporterVersions(lockfileContent, 'playground/feathers-api')
   const runtimeDependencies = new Map()
+  const nuxtEslintLayerVersion = rootLockedVersions.get(NUXT_ESLINT_LAYER_NAME)
+
+  if (!nuxtEslintLayerVersion) {
+    throw new Error(`No locked version found for ${NUXT_ESLINT_LAYER_NAME}`)
+  }
 
   addDependencies(runtimeDependencies, rootManifest, rootLockedVersions, ['dependencies'])
   addDependencies(
@@ -228,18 +235,47 @@ async function buildStandaloneRuntimeManifest() {
     ['devDependencies'],
     (dependencyName) => ROOT_DEV_RUNTIME_PACKAGES.has(dependencyName),
   )
-  addDependencies(runtimeDependencies, nuxtAppManifest, nuxtLockedVersions, ['dependencies', 'devDependencies'])
+  addDependencies(
+    runtimeDependencies,
+    nuxtAppManifest,
+    nuxtLockedVersions,
+    ['dependencies', 'devDependencies'],
+    (dependencyName) => dependencyName !== NUXT_ESLINT_LAYER_NAME,
+  )
   addDependencies(runtimeDependencies, feathersApiManifest, feathersLockedVersions, ['dependencies'])
 
   return {
-    name: 'feathers-nitro-stackblitz-runtime',
-    private: true,
-    version: '0.0.0',
-    type: 'module',
-    dependencies: Object.fromEntries(
-      [...runtimeDependencies.entries()].sort(([left], [right]) => left.localeCompare(right)),
-    ),
+    manifest: {
+      name: 'feathers-nitro-stackblitz-runtime',
+      private: true,
+      version: '0.0.0',
+      type: 'module',
+      dependencies: Object.fromEntries(
+        [...runtimeDependencies.entries()].sort(([left], [right]) => left.localeCompare(right)),
+      ),
+    },
+    nuxtEslintLayerVersion,
   }
+}
+
+async function createNuxtEslintLayerShim(version) {
+  await mkdir(NUXT_ESLINT_LAYER_ROOT, { recursive: true })
+  await writeFile(
+    join(NUXT_ESLINT_LAYER_ROOT, 'package.json'),
+    `${JSON.stringify({
+      name: NUXT_ESLINT_LAYER_NAME,
+      version,
+      private: true,
+      type: 'module',
+      main: './nuxt.config.ts',
+    }, null, 2)}\n`,
+    'utf8',
+  )
+  await writeFile(
+    join(NUXT_ESLINT_LAYER_ROOT, 'nuxt.config.ts'),
+    "export default {\n  typescript: {\n    typeCheck: true,\n  },\n}\n",
+    'utf8',
+  )
 }
 
 async function createRuntimeLinks() {
@@ -254,11 +290,12 @@ async function createRuntimeLinks() {
   }
 }
 
-const runtimeManifest = await buildStandaloneRuntimeManifest()
+const { manifest: runtimeManifest, nuxtEslintLayerVersion } = await buildStandaloneRuntimeManifest()
 const runtimeDependencyCount = Object.keys(runtimeManifest.dependencies).length
 
 if (process.env.STACKBLITZ_BOOTSTRAP_DRY_RUN === '1') {
-  console.log(`[stackblitz] create isolated npm runtime with ${runtimeDependencyCount} lock-aligned direct dependencies`)
+  console.log(`[stackblitz] create isolated npm runtime with ${runtimeDependencyCount} lock-aligned registry dependencies`)
+  console.log(`[stackblitz] create local ${NUXT_ESLINT_LAYER_NAME}@${nuxtEslintLayerVersion} tooling shim`)
   console.log(formatCommand('npm', NPM_INSTALL_ARGS, runtimeRoot))
   console.log('[stackblitz] link root and nuxt-app node_modules to .stackblitz-runtime/node_modules')
   console.log('[stackblitz] link .stackblitz-runtime/node_modules/feathers-api to playground/feathers-api')
@@ -271,13 +308,14 @@ await mkdir(runtimeRoot, { recursive: true })
 await writeFile(join(runtimeRoot, 'package.json'), `${JSON.stringify(runtimeManifest, null, 2)}\n`, 'utf8')
 await writeFile(join(runtimeRoot, '.npmrc'), 'registry=https://registry.npmjs.org/\n', 'utf8')
 
-console.log(`[stackblitz] installing isolated npm runtime with ${runtimeDependencyCount} lock-aligned direct dependencies`)
+console.log(`[stackblitz] installing isolated npm runtime with ${runtimeDependencyCount} lock-aligned registry dependencies`)
 await run('npm', NPM_INSTALL_ARGS, runtimeRoot)
 
 if (!(await pathExists(runtimeModulesDirectory))) {
   throw new Error(`Expected npm runtime modules at ${runtimeModulesDirectory}`)
 }
 
+await createNuxtEslintLayerShim(nuxtEslintLayerVersion)
 await createRuntimeLinks()
 if (!(await pathExists(nuxiBinary))) {
   throw new Error(`Expected Nuxt CLI at ${nuxiBinary} after isolated npm install`)

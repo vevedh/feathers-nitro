@@ -89,6 +89,8 @@ StackBlitz automatic dependency installation is disabled because this repository
 
 The project itself remains pinned to pnpm `10.34.5` for local development, CI, verification, and publication. StackBlitz uses a WebContainer-specific compatibility path instead: the bootstrap reads the direct versions already recorded in `pnpm-lock.yaml` for the root package, `playground/nuxt-app`, and `playground/feathers-api`, generates an isolated `.stackblitz-runtime/` manifest, and installs those exact direct versions with the WebContainer's native npm client.
 
+The npm runtime intentionally excludes `@gabortorma/nuxt-eslint-layer@1.0.0`: that package's published/source manifest uses pnpm `catalog:` dependency specifiers, which npm cannot parse. The bootstrap instead creates a local lock-versioned shim for that tooling-only layer that preserves TypeScript checking but omits the ESLint checker inside StackBlitz. Windows, CI, and release verification continue to use the real layer through pnpm.
+
 After that isolated install, the bootstrap links the repository root and Nuxt playground `node_modules` paths to `.stackblitz-runtime/node_modules`, links `feathers-api` back to the checked-in workspace source, and starts Nuxt directly through the isolated `nuxi` binary. This keeps the demo source identical to the pnpm workspace while avoiding pnpm's current WebContainer `realpath(.../node_modules)` failure during recursive workspace installation.
 
 The generated `.stackblitz-runtime/` directory is gitignored and never belongs in the npm package. No project manifest, pnpm catalog, or lockfile is rewritten by the StackBlitz bootstrap.
