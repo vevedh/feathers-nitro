@@ -108,7 +108,7 @@ pnpm install --frozen-lockfile
 pnpm verify
 ```
 
-`pnpm verify` validates package identity, lockfile portability, the coordinated FeathersJS 5.0.49 dependency train, the Vitest retry classifier, strict TypeScript, ESLint, Feathers/Nuxt integration tests, and the npm tarball contents.
+`pnpm verify` validates package identity, lockfile portability, the coordinated FeathersJS 5.0.49 dependency train, the tooling bridge (Vitest 4.1.10 / Vue TSC 3.3.11), the Vitest retry classifier, strict TypeScript, ESLint, Feathers/Nuxt integration tests, StackBlitz bootstrap invariants, and the npm tarball contents.
 
 Dependency maintenance is based on Taze with a 14-day maturity period:
 
@@ -120,6 +120,8 @@ pnpm deps:update:safe:recursive
 pnpm enforces the same 14-day maturity window when resolving new versions. Dependency install scripts are denied by default except for the reviewed native/build helpers required by this workspace (`esbuild`, `@parcel/watcher`, and `unrs-resolver`).
 
 Review Nuxt, Nitro, H3, TypeScript, Vitest, Feathers, and other coordinated or major upgrades independently before regenerating the lockfile.
+
+The current compatibility bridge intentionally keeps Nuxt `4.4.8`, `@nuxt/test-utils` `4.0.3`, Nitro `2.13.4`, H3 `1.15.11`, and the validated Vue runtime graph unchanged while using Vitest `4.1.10` and Vue TSC `3.3.11` directly. Nuxt `4.5.x` is reviewed separately because it raises the Node.js floor and moves the coordinated Vite/Vue graph.
 
 ## Publishing
 

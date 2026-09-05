@@ -15,6 +15,8 @@ All notable changes to this fork are documented in this file.
 
 ### Changed
 
+- Added a tooling-only compatibility bridge from Vitest `4.1.9` to `4.1.10` and Vue TSC `3.3.5` to `3.3.11`, without changing the validated Nuxt 4.4.8 / Nitro 2.13.4 / H3 1.15.11 runtime graph.
+- Added `check:tooling-bridge` to keep Nuxt `4.4.8` and `@nuxt/test-utils` `4.0.3` frozen while the direct test/type-check executables advance independently. The coordinated Nuxt 4.5/Vue/Vite migration is deferred to Patch 014.
 - Upgraded the coordinated FeathersJS v5 dependency train from `5.0.46` to `5.0.49` across the package, playground catalogs, importers, and lockfile snapshots.
 - Added `check:feathers-suite` to reject mixed Feathers versions or incomplete lockfile integrity metadata before release and during `pnpm verify`.
 - Added a playground regression test that rejects an unknown `$where` operator hidden inside nested `$or` arrays.

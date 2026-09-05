@@ -62,7 +62,7 @@
     "dev:nuxt": "pnpm --filter nuxt-app dev",
     "stackblitz:bootstrap": "node scripts/stackblitz-bootstrap.mjs",
     "dev:api": "pnpm --filter feathers-api dev",
-    "prerelease": "pnpm check:identity && pnpm check:portability && pnpm check:feathers-suite && pnpm check:stackblitz && pnpm test:types && pnpm lint && pnpm test:all",
+    "prerelease": "pnpm check:identity && pnpm check:portability && pnpm check:feathers-suite && pnpm check:stackblitz && pnpm check:tooling-bridge && pnpm test:types && pnpm lint && pnpm test:all",
     "release": "release-it",
     "lint": "pnpm lint:root && pnpm lint:workspaces",
     "lint:fix": "pnpm lint:root:fix && pnpm lint:workspaces:fix",
@@ -79,7 +79,7 @@
     "deps:update:safe": "taze minor -w --maturity-period 14",
     "deps:update:safe:recursive": "taze minor -r -w --maturity-period 14",
     "deps:update:major:review": "taze major -r",
-    "verify": "pnpm check:identity && pnpm check:portability && pnpm check:feathers-suite && pnpm check:test-runner && pnpm check:stackblitz && pnpm test:types && pnpm lint && pnpm test:all && pnpm pack:check",
+    "verify": "pnpm check:identity && pnpm check:portability && pnpm check:feathers-suite && pnpm check:test-runner && pnpm check:stackblitz && pnpm check:tooling-bridge && pnpm test:types && pnpm lint && pnpm test:all && pnpm pack:check",
     "lint:workspaces": "pnpm --dir playground/feathers-api exec eslint . && pnpm --dir playground/nuxt-app prepare && pnpm --dir playground/nuxt-app exec eslint .",
     "lint:workspaces:fix": "pnpm --dir playground/feathers-api exec eslint . --fix && pnpm --dir playground/nuxt-app prepare && pnpm --dir playground/nuxt-app exec eslint . --fix",
     "pack:check": "pnpm pack --pack-destination .pack-check",
@@ -87,6 +87,7 @@
     "lint:root": "eslint --config eslint.config.mjs eslint.config.mjs nitro.config.ts taze.config.js scripts src test",
     "lint:root:fix": "eslint --config eslint.config.mjs eslint.config.mjs nitro.config.ts taze.config.js scripts src test --fix",
     "check:test-runner": "node scripts/check-vitest-retry.mjs",
+    "check:tooling-bridge": "node scripts/check-tooling-bridge.mjs",
     "check:feathers-suite": "node scripts/check-feathers-suite.mjs",
     "check:stackblitz": "node scripts/check-stackblitz-config.mjs"
   },
@@ -115,8 +116,8 @@
     "taze": "19.14.1",
     "typescript": "5.9.3",
     "unbuild": "3.6.1",
-    "vitest": "4.1.9",
-    "vue-tsc": "3.3.5"
+    "vitest": "4.1.10",
+    "vue-tsc": "3.3.11"
   },
   "pnpm": {
     "updateConfig": {
