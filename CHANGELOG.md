@@ -6,8 +6,8 @@ All notable changes to this fork are documented in this file.
 
 ### Fixed
 
-- Stabilized the StackBlitz WebContainer bootstrap around pinned `pnpm@10.34.5`: pnpm is installed under `$HOME/.local`, self-managed package-manager relaunches are disabled, optional pnpm hook probing is disabled, workspace `.npmrc` placeholders stay empty, required workspace `node_modules` paths are precreated for pnpm's realpath/linking phase, and the repository lockfile remains frozen.
-- Added a `check:stackblitz` release gate that prevents package-manager auto-detection, pnpm-version drift, managed-tool-path regressions, non-empty workspace `.npmrc` files, loss of the frozen lockfile, or removal of the WebContainer-scoped settings-check override.
+- Stabilized the StackBlitz WebContainer bootstrap around pinned `pnpm@10.34.5`: install pnpm below `$HOME/.local`, disable pnpm self-management, keep the lockfile frozen, temporarily suppress only the Nuxt playground `prepare` lifecycle during installation, restore the manifest, link the local Feathers API workspace explicitly, and start Nuxt directly through the root `nuxi` binary.
+- Added a `check:stackblitz` release gate that prevents package-manager auto-detection, pnpm-version drift, managed-tool-path regressions, non-empty workspace `.npmrc` placeholders, loss of the frozen lockfile, lifecycle-bootstrap drift, or a return to `pnpm run` for the WebContainer Nuxt launch.
 - Removed the final `style/max-len` warning from `check-feathers-suite` after the complete Windows verification passed through all Express/Koa/Socket.IO integration suites and `pack:check`.
 - Normalized the Patch 012 Feathers-suite guard and security regression test to satisfy the repository max-line-length and lowercase test-title lint contracts discovered by the full Windows `pnpm verify` gate.
 

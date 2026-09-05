@@ -85,23 +85,15 @@ The [`playground`](./playground/) directory contains a Nuxt 4 example combining 
 
 ### StackBlitz WebContainer
 
-StackBlitz automatic dependency installation is disabled because the workspace uses pnpm catalogs. The online bootstrap runs through `scripts/stackblitz-bootstrap.mjs`, which installs the exact pnpm version declared by the repository into `$HOME/.local` and then invokes that binary directly.
+StackBlitz automatic dependency installation is disabled because this repository is a pnpm catalog workspace. The online bootstrap uses `scripts/stackblitz-bootstrap.mjs` and installs the exact pnpm version declared by the repository under `$HOME/.local`.
 
-```bash
-npm install --global --prefix "$HOME/.local" pnpm@10.34.5
-"$HOME/.local/bin/pnpm" --config.manage-package-manager-versions=false --ignore-pnpmfile install --frozen-lockfile --config.ignore-lockfile-settings-checks=true
-"$HOME/.local/bin/pnpm" --config.manage-package-manager-versions=false --ignore-pnpmfile --filter nuxt-app dev
-```
+The WebContainer currently exposes a pnpm/Node compatibility edge case when pnpm resolves a missing workspace `node_modules` path during lifecycle execution. To keep the normal project contract unchanged, the bootstrap temporarily removes only `playground/nuxt-app`'s `prepare` script while the frozen install runs, restores the original `package.json`, ensures the local `feathers-api` workspace link is available, and starts Nuxt directly through the root `node_modules/.bin/nuxi` executable.
 
-Disabling `manage-package-manager-versions` is intentional in WebContainers. pnpm 10 otherwise follows the root `packageManager` field by launching a managed copy below `~/.pnpm/.tools`, a path that currently fails during package materialization in StackBlitz. Installing pnpm below `$HOME/.local` and invoking that executable directly avoids the managed-tool path while keeping the repository version pin.
+Dependency build scripts remain enabled during the install. The checked-in lockfile stays frozen and local development/CI keep their ordinary pnpm behavior.
 
-Before the frozen install, the bootstrap also creates the root, `playground/feathers-api`, and `playground/nuxt-app` `node_modules` directories. This is a WebContainer compatibility guard for pnpm's realpath/linking phase; it does not change dependency resolution or the checked-in lockfile.
+The workspace-local `.npmrc` files under `playground/feathers-api` and `playground/nuxt-app` intentionally exist as empty placeholders for pnpm 10 WebContainer compatibility. The actual pnpm policy remains defined at the workspace root.
 
-The workspace-local `.npmrc` files under `playground/feathers-api` and `playground/nuxt-app` are intentionally present but empty. They work around a pnpm 10/WebContainer missing-config `ENOENT` issue without overriding the root pnpm configuration. `--ignore-pnpmfile` likewise prevents optional pnpm hook-file probing from becoming fatal in the WebContainer compatibility layer.
-
-StackBlitz alone uses `--config.ignore-lockfile-settings-checks=true` while retaining `--frozen-lockfile`. This skips only environment-specific lockfile-settings fingerprint drift; dependency specifiers and locked resolutions remain frozen. Local development and CI continue to use ordinary frozen installs with all lockfile settings checks enabled.
-
-`pnpm check:stackblitz` enforces the pinned pnpm version, the `$HOME/.local` bootstrap, disabled pnpm self-management, the frozen lockfile, empty workspace `.npmrc` placeholders, and deterministic Nuxt launch.
+`pnpm check:stackblitz` verifies the pinned pnpm version, frozen lockfile, WebContainer-only settings override, temporary Nuxt lifecycle suppression, manifest restoration contract, explicit workspace link, and direct Nuxt launch.
 
 ## Development
 
