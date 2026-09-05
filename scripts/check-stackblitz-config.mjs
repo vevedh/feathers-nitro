@@ -7,29 +7,34 @@ const EXPECTED_PNPM_VERSION = '10.34.5'
 const EXPECTED_PACKAGE_MANAGER = `pnpm@${EXPECTED_PNPM_VERSION}`
 const EXPECTED_START_COMMAND = 'node scripts/stackblitz-bootstrap.mjs'
 const REQUIRED_BOOTSTRAP_SNIPPETS = [
-  `const PNPM_VERSION = '${EXPECTED_PNPM_VERSION}'`,
-  "const projectRoot = resolve(scriptDirectory, '..')",
-  "['install', '--global', '--prefix', pnpmPrefix, `pnpm@${PNPM_VERSION}`]",
-  "'--config.manage-package-manager-versions=false'",
-  "'--ignore-pnpmfile'",
-  "'--frozen-lockfile'",
-  "'--config.ignore-lockfile-settings-checks=true'",
-  "const nuxtAppPackagePath = join(nuxtAppRoot, 'package.json')",
-  "if (prepareScript !== 'nuxi prepare')",
-  'delete temporaryManifest.scripts.prepare',
-  'await installWithoutNuxtPrepare()',
-  "const nuxiBinary = join(rootModulesDirectory, '.bin', 'nuxi')",
-  "const feathersApiLink = join(nuxtAppModulesDirectory, 'feathers-api')",
-  "const feathersApiLinkTarget = relative(nuxtAppModulesDirectory, feathersApiRoot)",
-  "await symlink(feathersApiLinkTarget, feathersApiLink, 'dir')",
-  "if (!(await pathExists(nuxiBinary)))",
+  "const runtimeRoot = join(projectRoot, '.stackblitz-runtime')",
+  "const runtimeModulesDirectory = join(runtimeRoot, 'node_modules')",
+  "const lockfilePath = join(projectRoot, 'pnpm-lock.yaml')",
+  "parseImporterVersions(lockfileContent, '.')",
+  "parseImporterVersions(lockfileContent, 'playground/nuxt-app')",
+  "parseImporterVersions(lockfileContent, 'playground/feathers-api')",
+  "addDependencies(runtimeDependencies, rootManifest, rootLockedVersions, ['dependencies'])",
+  "addDependencies(runtimeDependencies, nuxtAppManifest, nuxtLockedVersions, ['dependencies', 'devDependencies'])",
+  "addDependencies(runtimeDependencies, feathersApiManifest, feathersLockedVersions, ['dependencies'])",
+  'const NPM_INSTALL_ARGS = [',
+  "'--package-lock=false'",
+  "'--legacy-peer-deps'",
+  "await run('npm', NPM_INSTALL_ARGS, runtimeRoot)",
+  "await symlink(relative(projectRoot, runtimeModulesDirectory), rootModulesDirectory, 'dir')",
+  "await symlink(relative(nuxtAppRoot, runtimeModulesDirectory), nuxtAppModulesDirectory, 'dir')",
+  "await symlink(relative(runtimeModulesDirectory, feathersApiRoot), feathersApiLink, 'dir')",
   "await run(nuxiBinary, ['dev', '--host'], nuxtAppRoot)",
   "process.env.STACKBLITZ_BOOTSTRAP_DRY_RUN === '1'",
 ]
 
 const FORBIDDEN_BOOTSTRAP_SNIPPETS = [
+  'installWithoutNuxtPrepare',
+  'manage-package-manager-versions',
+  'ignore-lockfile-settings-checks',
+  '--frozen-lockfile',
+  '--ignore-pnpmfile',
+  'pnpmBinary',
   "'--filter', 'nuxt-app', 'dev'",
-  "join(projectRoot, 'playground', 'nuxt-app', 'node_modules'),\n]",
 ]
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
@@ -39,13 +44,14 @@ async function readUtf8(relativePath) {
   return readFile(resolve(projectRoot, relativePath), 'utf8')
 }
 
-async function readWorkspaceNpmrc(relativePath) {
+async function pathIsAbsent(relativePath) {
   try {
-    return await readUtf8(relativePath)
+    await readUtf8(relativePath)
+    return false
   }
   catch (error) {
     if (error && typeof error === 'object' && error.code === 'ENOENT') {
-      return null
+      return true
     }
     throw error
   }
@@ -55,55 +61,30 @@ const [
   packageContent,
   stackblitzContent,
   bootstrapContent,
-  nuxtAppPackageContent,
-  rootNpmrc,
-  feathersApiNpmrc,
-  nuxtAppNpmrc,
+  gitignoreContent,
+  feathersApiNpmrcAbsent,
+  nuxtAppNpmrcAbsent,
 ] = await Promise.all([
   readUtf8('package.json'),
   readUtf8('.stackblitzrc'),
   readUtf8('scripts/stackblitz-bootstrap.mjs'),
-  readUtf8('playground/nuxt-app/package.json'),
-  readUtf8('.npmrc'),
-  readWorkspaceNpmrc('playground/feathers-api/.npmrc'),
-  readWorkspaceNpmrc('playground/nuxt-app/.npmrc'),
+  readUtf8('.gitignore'),
+  pathIsAbsent('playground/feathers-api/.npmrc'),
+  pathIsAbsent('playground/nuxt-app/.npmrc'),
 ])
 
 const packageJson = JSON.parse(packageContent)
-const nuxtAppPackageJson = JSON.parse(nuxtAppPackageContent)
 const stackblitzConfig = JSON.parse(stackblitzContent)
 const violations = []
 
 if (packageJson.packageManager !== EXPECTED_PACKAGE_MANAGER) {
   violations.push(
-    `package.json packageManager must be ${EXPECTED_PACKAGE_MANAGER}, got ${packageJson.packageManager ?? 'missing'}`,
+    `package.json packageManager must remain ${EXPECTED_PACKAGE_MANAGER}, got ${packageJson.packageManager ?? 'missing'}`,
   )
 }
 
 if (packageJson.scripts?.['stackblitz:bootstrap'] !== EXPECTED_START_COMMAND) {
   violations.push(`package.json stackblitz:bootstrap must be "${EXPECTED_START_COMMAND}"`)
-}
-
-if (nuxtAppPackageJson.scripts?.prepare !== 'nuxi prepare') {
-  violations.push('playground/nuxt-app must keep its normal "prepare": "nuxi prepare" script outside StackBlitz')
-}
-
-if (rootNpmrc.trim().length === 0) {
-  violations.push('the root .npmrc must keep the workspace pnpm configuration')
-}
-
-for (const [workspaceName, workspaceNpmrc] of [
-  ['playground/feathers-api', feathersApiNpmrc],
-  ['playground/nuxt-app', nuxtAppNpmrc],
-]) {
-  if (workspaceNpmrc === null) {
-    violations.push(`${workspaceName}/.npmrc is required for pnpm 10 on StackBlitz WebContainers`)
-  }
-  else if (workspaceNpmrc.length !== 0) {
-    violations.push(
-      `${workspaceName}/.npmrc must stay empty so it cannot alter the frozen workspace lockfile configuration`,
-    )
-  }
 }
 
 if (stackblitzConfig.installDependencies !== false) {
@@ -114,6 +95,14 @@ if (stackblitzConfig.startCommand !== EXPECTED_START_COMMAND) {
   violations.push(`.stackblitzrc startCommand must be "${EXPECTED_START_COMMAND}"`)
 }
 
+if (!gitignoreContent.split(/\r?\n/u).includes('.stackblitz-runtime/')) {
+  violations.push('.gitignore must exclude .stackblitz-runtime/')
+}
+
+if (!feathersApiNpmrcAbsent || !nuxtAppNpmrcAbsent) {
+  violations.push('obsolete playground-local .npmrc placeholders must be removed')
+}
+
 for (const snippet of REQUIRED_BOOTSTRAP_SNIPPETS) {
   if (!bootstrapContent.includes(snippet)) {
     violations.push(`scripts/stackblitz-bootstrap.mjs is missing required contract: ${snippet}`)
@@ -122,12 +111,12 @@ for (const snippet of REQUIRED_BOOTSTRAP_SNIPPETS) {
 
 for (const snippet of FORBIDDEN_BOOTSTRAP_SNIPPETS) {
   if (bootstrapContent.includes(snippet)) {
-    violations.push(`scripts/stackblitz-bootstrap.mjs contains obsolete StackBlitz workaround: ${snippet}`)
+    violations.push(`scripts/stackblitz-bootstrap.mjs contains obsolete pnpm/WebContainer workaround: ${snippet}`)
   }
 }
 
 if (/\bnpx\b/u.test(bootstrapContent)) {
-  violations.push('StackBlitz bootstrap must not invoke pnpm through npx')
+  violations.push('StackBlitz bootstrap must not use npx package-manager indirection')
 }
 
 if (/\.pnpm[/\\]\.tools/u.test(bootstrapContent)) {
@@ -147,8 +136,7 @@ if (violations.length > 0) {
 }
 else {
   console.log(
-    `StackBlitz bootstrap installs pnpm ${EXPECTED_PNPM_VERSION} under HOME/.local, disables pnpm self-management, `
-      + 'keeps dependency resolution frozen, suppresses only the Nuxt workspace prepare lifecycle during install, '
-      + 'restores the manifest, links feathers-api explicitly, and launches nuxi directly.',
+    `StackBlitz uses an isolated npm runtime derived from the pnpm ${EXPECTED_PNPM_VERSION} lockfile, `
+      + 'links the root and Nuxt playground to that runtime, links feathers-api locally, and launches nuxi directly.',
   )
 }

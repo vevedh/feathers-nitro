@@ -1,34 +1,46 @@
 import { spawn } from 'node:child_process'
-import { lstat, mkdir, readFile, symlink, writeFile } from 'node:fs/promises'
-import { homedir } from 'node:os'
+import { lstat, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
-const PNPM_VERSION = '10.34.5'
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
 const projectRoot = resolve(scriptDirectory, '..')
-const homeDirectory = process.env.HOME || homedir()
-const pnpmPrefix = join(homeDirectory, '.local')
-const pnpmBinary = join(pnpmPrefix, 'bin', 'pnpm')
+const runtimeRoot = join(projectRoot, '.stackblitz-runtime')
+const runtimeModulesDirectory = join(runtimeRoot, 'node_modules')
 const rootModulesDirectory = join(projectRoot, 'node_modules')
 const nuxtAppRoot = join(projectRoot, 'playground', 'nuxt-app')
 const nuxtAppModulesDirectory = join(nuxtAppRoot, 'node_modules')
-const nuxtAppPackagePath = join(nuxtAppRoot, 'package.json')
 const feathersApiRoot = join(projectRoot, 'playground', 'feathers-api')
-const feathersApiLink = join(nuxtAppModulesDirectory, 'feathers-api')
-const feathersApiLinkTarget = relative(nuxtAppModulesDirectory, feathersApiRoot)
-const nuxiBinary = join(rootModulesDirectory, '.bin', 'nuxi')
-const pnpmRuntimeFlags = [
-  '--config.manage-package-manager-versions=false',
-  '--ignore-pnpmfile',
+const feathersApiLink = join(runtimeModulesDirectory, 'feathers-api')
+const nuxiBinary = join(runtimeModulesDirectory, '.bin', 'nuxi')
+const lockfilePath = join(projectRoot, 'pnpm-lock.yaml')
+const rootPackagePath = join(projectRoot, 'package.json')
+const nuxtAppPackagePath = join(nuxtAppRoot, 'package.json')
+const feathersApiPackagePath = join(feathersApiRoot, 'package.json')
+
+const ROOT_DEV_RUNTIME_PACKAGES = new Set([
+  '@gabortorma/nuxt-eslint-layer',
+  '@types/node',
+  'nuxi',
+  'nuxt',
+  'typescript',
+  'vue-tsc',
+])
+
+const NPM_INSTALL_ARGS = [
+  'install',
+  '--package-lock=false',
+  '--legacy-peer-deps',
+  '--fund=false',
+  '--audit=false',
 ]
 
-function formatCommand(command, args, cwd = projectRoot) {
+function formatCommand(command, args, cwd) {
   return `(cd ${JSON.stringify(cwd)} && ${[command, ...args].map((value) => JSON.stringify(value)).join(' ')})`
 }
 
-async function run(command, args, cwd = projectRoot) {
+async function run(command, args, cwd) {
   if (process.env.STACKBLITZ_BOOTSTRAP_DRY_RUN === '1') {
     console.log(formatCommand(command, args, cwd))
     return
@@ -67,67 +79,209 @@ async function pathExists(pathname) {
   }
 }
 
-async function installWithoutNuxtPrepare() {
-  const originalContent = await readFile(nuxtAppPackagePath, 'utf8')
-  const manifest = JSON.parse(originalContent)
-  const prepareScript = manifest.scripts?.prepare
+function unquoteYamlScalar(value) {
+  const trimmed = value.trim()
+  if (
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+    || (trimmed.startsWith('"') && trimmed.endsWith('"'))
+  ) {
+    return trimmed.slice(1, -1)
+  }
+  return trimmed
+}
 
-  if (prepareScript !== 'nuxi prepare') {
-    throw new Error(
-      `Unexpected nuxt-app prepare script: ${JSON.stringify(prepareScript)}. `
-      + 'Refusing to mutate the StackBlitz bootstrap contract.',
-    )
+function normalizeLockedVersion(value) {
+  const unquoted = unquoteYamlScalar(value)
+  if (unquoted.startsWith('link:') || unquoted.startsWith('file:') || unquoted.startsWith('workspace:')) {
+    return null
   }
 
-  const temporaryManifest = structuredClone(manifest)
-  delete temporaryManifest.scripts.prepare
+  const peerSuffixIndex = unquoted.indexOf('(')
+  return peerSuffixIndex === -1 ? unquoted : unquoted.slice(0, peerSuffixIndex)
+}
 
-  await writeFile(nuxtAppPackagePath, `${JSON.stringify(temporaryManifest, null, 2)}\n`, 'utf8')
+function parseImporterVersions(lockfileContent, importerName) {
+  const versions = new Map()
+  const lines = lockfileContent.split(/\r?\n/u)
+  let insideImporters = false
+  let insideTargetImporter = false
+  let dependencyGroup = null
+  let dependencyName = null
 
-  try {
-    await run(pnpmBinary, [
-      ...pnpmRuntimeFlags,
-      'install',
-      '--frozen-lockfile',
-      '--config.ignore-lockfile-settings-checks=true',
-    ])
+  for (const line of lines) {
+    if (line === 'importers:') {
+      insideImporters = true
+      continue
+    }
+
+    if (!insideImporters) {
+      continue
+    }
+
+    if (/^[^\s].*:\s*$/u.test(line)) {
+      break
+    }
+
+    const importerMatch = /^  ([^\s].*):\s*$/u.exec(line)
+    if (importerMatch) {
+      insideTargetImporter = unquoteYamlScalar(importerMatch[1]) === importerName
+      dependencyGroup = null
+      dependencyName = null
+      continue
+    }
+
+    if (!insideTargetImporter) {
+      continue
+    }
+
+    const groupMatch = /^    (dependencies|devDependencies|optionalDependencies):\s*$/u.exec(line)
+    if (groupMatch) {
+      dependencyGroup = groupMatch[1]
+      dependencyName = null
+      continue
+    }
+
+    if (!dependencyGroup) {
+      continue
+    }
+
+    const dependencyMatch = /^      (.+):\s*$/u.exec(line)
+    if (dependencyMatch) {
+      dependencyName = unquoteYamlScalar(dependencyMatch[1])
+      continue
+    }
+
+    if (!dependencyName) {
+      continue
+    }
+
+    const versionMatch = /^        version:\s+(.+)$/u.exec(line)
+    if (versionMatch) {
+      const version = normalizeLockedVersion(versionMatch[1])
+      if (version) {
+        versions.set(dependencyName, version)
+      }
+    }
   }
-  finally {
-    await writeFile(nuxtAppPackagePath, originalContent, 'utf8')
+
+  return versions
+}
+
+function addDependencies(target, manifest, lockedVersions, dependencyFields, filter = () => true) {
+  for (const dependencyField of dependencyFields) {
+    for (const dependencyName of Object.keys(manifest[dependencyField] ?? {})) {
+      if (!filter(dependencyName)) {
+        continue
+      }
+
+      const declaredSpecifier = manifest[dependencyField][dependencyName]
+      if (typeof declaredSpecifier === 'string' && declaredSpecifier.startsWith('workspace:')) {
+        continue
+      }
+
+      const lockedVersion = lockedVersions.get(dependencyName)
+      if (!lockedVersion) {
+        const manifestName = manifest.name ?? 'unnamed package'
+        throw new Error(
+          `No locked registry version found for ${dependencyName} in ${manifestName} ${dependencyField}`,
+        )
+      }
+
+      const existingVersion = target.get(dependencyName)
+      if (existingVersion && existingVersion !== lockedVersion) {
+        throw new Error(
+          `Conflicting locked versions for ${dependencyName}: ${existingVersion} versus ${lockedVersion}`,
+        )
+      }
+
+      target.set(dependencyName, lockedVersion)
+    }
   }
 }
 
-async function ensureNuxtWorkspaceLinks() {
-  await mkdir(nuxtAppModulesDirectory, { recursive: true })
+async function buildStandaloneRuntimeManifest() {
+  const [
+    lockfileContent,
+    rootPackageContent,
+    nuxtAppPackageContent,
+    feathersApiPackageContent,
+  ] = await Promise.all([
+    readFile(lockfilePath, 'utf8'),
+    readFile(rootPackagePath, 'utf8'),
+    readFile(nuxtAppPackagePath, 'utf8'),
+    readFile(feathersApiPackagePath, 'utf8'),
+  ])
+
+  const rootManifest = JSON.parse(rootPackageContent)
+  const nuxtAppManifest = JSON.parse(nuxtAppPackageContent)
+  const feathersApiManifest = JSON.parse(feathersApiPackageContent)
+  const rootLockedVersions = parseImporterVersions(lockfileContent, '.')
+  const nuxtLockedVersions = parseImporterVersions(lockfileContent, 'playground/nuxt-app')
+  const feathersLockedVersions = parseImporterVersions(lockfileContent, 'playground/feathers-api')
+  const runtimeDependencies = new Map()
+
+  addDependencies(runtimeDependencies, rootManifest, rootLockedVersions, ['dependencies'])
+  addDependencies(
+    runtimeDependencies,
+    rootManifest,
+    rootLockedVersions,
+    ['devDependencies'],
+    (dependencyName) => ROOT_DEV_RUNTIME_PACKAGES.has(dependencyName),
+  )
+  addDependencies(runtimeDependencies, nuxtAppManifest, nuxtLockedVersions, ['dependencies', 'devDependencies'])
+  addDependencies(runtimeDependencies, feathersApiManifest, feathersLockedVersions, ['dependencies'])
+
+  return {
+    name: 'feathers-nitro-stackblitz-runtime',
+    private: true,
+    version: '0.0.0',
+    type: 'module',
+    dependencies: Object.fromEntries(
+      [...runtimeDependencies.entries()].sort(([left], [right]) => left.localeCompare(right)),
+    ),
+  }
+}
+
+async function createRuntimeLinks() {
+  await rm(rootModulesDirectory, { recursive: true, force: true })
+  await rm(nuxtAppModulesDirectory, { recursive: true, force: true })
+
+  await symlink(relative(projectRoot, runtimeModulesDirectory), rootModulesDirectory, 'dir')
+  await symlink(relative(nuxtAppRoot, runtimeModulesDirectory), nuxtAppModulesDirectory, 'dir')
 
   if (!(await pathExists(feathersApiLink))) {
-    await symlink(feathersApiLinkTarget, feathersApiLink, 'dir')
+    await symlink(relative(runtimeModulesDirectory, feathersApiRoot), feathersApiLink, 'dir')
   }
 }
 
+const runtimeManifest = await buildStandaloneRuntimeManifest()
+const runtimeDependencyCount = Object.keys(runtimeManifest.dependencies).length
+
 if (process.env.STACKBLITZ_BOOTSTRAP_DRY_RUN === '1') {
-  console.log(`[stackblitz] temporarily remove playground/nuxt-app prepare script (${JSON.stringify('nuxi prepare')})`)
-  console.log(formatCommand('npm', ['install', '--global', '--prefix', pnpmPrefix, `pnpm@${PNPM_VERSION}`]))
-  console.log(formatCommand(pnpmBinary, [
-    ...pnpmRuntimeFlags,
-    'install',
-    '--frozen-lockfile',
-    '--config.ignore-lockfile-settings-checks=true',
-  ]))
-  console.log('[stackblitz] restore playground/nuxt-app/package.json and ensure node_modules/feathers-api workspace link')
+  console.log(`[stackblitz] create isolated npm runtime with ${runtimeDependencyCount} lock-aligned direct dependencies`)
+  console.log(formatCommand('npm', NPM_INSTALL_ARGS, runtimeRoot))
+  console.log('[stackblitz] link root and nuxt-app node_modules to .stackblitz-runtime/node_modules')
+  console.log('[stackblitz] link .stackblitz-runtime/node_modules/feathers-api to playground/feathers-api')
   console.log(formatCommand(nuxiBinary, ['dev', '--host'], nuxtAppRoot))
   process.exit(0)
 }
 
-await mkdir(pnpmPrefix, { recursive: true })
-console.log(`[stackblitz] installing pnpm ${PNPM_VERSION} under ${pnpmPrefix}`)
-await run('npm', ['install', '--global', '--prefix', pnpmPrefix, `pnpm@${PNPM_VERSION}`])
-console.log('[stackblitz] installing workspace with nuxt-app prepare temporarily disabled')
-await installWithoutNuxtPrepare()
-console.log('[stackblitz] dependency install complete; nuxt-app package.json restored')
-await ensureNuxtWorkspaceLinks()
-if (!(await pathExists(nuxiBinary))) {
-  throw new Error(`Expected Nuxt CLI at ${nuxiBinary} after pnpm install`)
+await rm(runtimeRoot, { recursive: true, force: true })
+await mkdir(runtimeRoot, { recursive: true })
+await writeFile(join(runtimeRoot, 'package.json'), `${JSON.stringify(runtimeManifest, null, 2)}\n`, 'utf8')
+await writeFile(join(runtimeRoot, '.npmrc'), 'registry=https://registry.npmjs.org/\n', 'utf8')
+
+console.log(`[stackblitz] installing isolated npm runtime with ${runtimeDependencyCount} lock-aligned direct dependencies`)
+await run('npm', NPM_INSTALL_ARGS, runtimeRoot)
+
+if (!(await pathExists(runtimeModulesDirectory))) {
+  throw new Error(`Expected npm runtime modules at ${runtimeModulesDirectory}`)
 }
-console.log(`[stackblitz] starting Nuxt playground with ${nuxiBinary}`)
+
+await createRuntimeLinks()
+if (!(await pathExists(nuxiBinary))) {
+  throw new Error(`Expected Nuxt CLI at ${nuxiBinary} after isolated npm install`)
+}
+
+console.log('[stackblitz] isolated runtime ready; starting Nuxt playground')
 await run(nuxiBinary, ['dev', '--host'], nuxtAppRoot)

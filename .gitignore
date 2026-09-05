@@ -65,3 +65,6 @@ Temporary Items
 # Local AI assistance context
 /AGENTS.md
 /patch-memory/
+
+# StackBlitz generated runtime
+.stackblitz-runtime/

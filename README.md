@@ -85,15 +85,15 @@ The [`playground`](./playground/) directory contains a Nuxt 4 example combining 
 
 ### StackBlitz WebContainer
 
-StackBlitz automatic dependency installation is disabled because this repository is a pnpm catalog workspace. The online bootstrap uses `scripts/stackblitz-bootstrap.mjs` and installs the exact pnpm version declared by the repository under `$HOME/.local`.
+StackBlitz automatic dependency installation is disabled because this repository is a pnpm catalog workspace. The online playground starts through `scripts/stackblitz-bootstrap.mjs`.
 
-The WebContainer currently exposes a pnpm/Node compatibility edge case when pnpm resolves a missing workspace `node_modules` path during lifecycle execution. To keep the normal project contract unchanged, the bootstrap temporarily removes only `playground/nuxt-app`'s `prepare` script while the frozen install runs, restores the original `package.json`, ensures the local `feathers-api` workspace link is available, and starts Nuxt directly through the root `node_modules/.bin/nuxi` executable.
+The project itself remains pinned to pnpm `10.34.5` for local development, CI, verification, and publication. StackBlitz uses a WebContainer-specific compatibility path instead: the bootstrap reads the direct versions already recorded in `pnpm-lock.yaml` for the root package, `playground/nuxt-app`, and `playground/feathers-api`, generates an isolated `.stackblitz-runtime/` manifest, and installs those exact direct versions with the WebContainer's native npm client.
 
-Dependency build scripts remain enabled during the install. The checked-in lockfile stays frozen and local development/CI keep their ordinary pnpm behavior.
+After that isolated install, the bootstrap links the repository root and Nuxt playground `node_modules` paths to `.stackblitz-runtime/node_modules`, links `feathers-api` back to the checked-in workspace source, and starts Nuxt directly through the isolated `nuxi` binary. This keeps the demo source identical to the pnpm workspace while avoiding pnpm's current WebContainer `realpath(.../node_modules)` failure during recursive workspace installation.
 
-The workspace-local `.npmrc` files under `playground/feathers-api` and `playground/nuxt-app` intentionally exist as empty placeholders for pnpm 10 WebContainer compatibility. The actual pnpm policy remains defined at the workspace root.
+The generated `.stackblitz-runtime/` directory is gitignored and never belongs in the npm package. No project manifest, pnpm catalog, or lockfile is rewritten by the StackBlitz bootstrap.
 
-`pnpm check:stackblitz` verifies the pinned pnpm version, frozen lockfile, WebContainer-only settings override, temporary Nuxt lifecycle suppression, manifest restoration contract, explicit workspace link, and direct Nuxt launch.
+`pnpm check:stackblitz` verifies that this isolated-runtime contract remains in place and rejects the older pnpm/npx/workspace-`.npmrc` workarounds.
 
 ## Development
 
