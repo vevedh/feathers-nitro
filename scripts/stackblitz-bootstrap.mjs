@@ -30,6 +30,18 @@ const ROOT_DEV_RUNTIME_PACKAGES = new Set([
 const NUXT_ESLINT_LAYER_NAME = '@gabortorma/nuxt-eslint-layer'
 const NUXT_ESLINT_LAYER_ROOT = join(runtimeModulesDirectory, '@gabortorma', 'nuxt-eslint-layer')
 
+const STACKBLITZ_NUXT_ENV = {
+  FEATHERS_NITRO_STACKBLITZ: '1',
+}
+
+const NUXT_DEV_ARGS = [
+  'dev',
+  '--host',
+  '0.0.0.0',
+  '--port',
+  '3000',
+]
+
 const NPM_INSTALL_ARGS = [
   'install',
   '--package-lock=false',
@@ -38,11 +50,18 @@ const NPM_INSTALL_ARGS = [
   '--audit=false',
 ]
 
-function formatCommand(command, args, cwd) {
-  return `(cd ${JSON.stringify(cwd)} && ${[command, ...args].map((value) => JSON.stringify(value)).join(' ')})`
+function formatCommand(command, args, cwd, envOverrides = {}) {
+  const environment = Object.entries(envOverrides)
+    .map(([name, value]) => `${name}=${JSON.stringify(value)}`)
+    .join(' ')
+  const commandLine = [command, ...args]
+    .map((value) => JSON.stringify(value))
+    .join(' ')
+  const prefix = environment ? `${environment} ` : ''
+  return `(cd ${JSON.stringify(cwd)} && ${prefix}${commandLine})`
 }
 
-async function run(command, args, cwd) {
+async function run(command, args, cwd, envOverrides = {}) {
   if (process.env.STACKBLITZ_BOOTSTRAP_DRY_RUN === '1') {
     console.log(formatCommand(command, args, cwd))
     return
@@ -51,7 +70,7 @@ async function run(command, args, cwd) {
   await new Promise((resolvePromise, rejectPromise) => {
     const child = spawn(command, args, {
       cwd,
-      env: process.env,
+      env: { ...process.env, ...envOverrides },
       stdio: 'inherit',
     })
 
@@ -299,7 +318,7 @@ if (process.env.STACKBLITZ_BOOTSTRAP_DRY_RUN === '1') {
   console.log(formatCommand('npm', NPM_INSTALL_ARGS, runtimeRoot))
   console.log('[stackblitz] link root and nuxt-app node_modules to .stackblitz-runtime/node_modules')
   console.log('[stackblitz] link .stackblitz-runtime/node_modules/feathers-api to playground/feathers-api')
-  console.log(formatCommand(nuxiBinary, ['dev', '--host'], nuxtAppRoot))
+  console.log(formatCommand(nuxiBinary, NUXT_DEV_ARGS, nuxtAppRoot, STACKBLITZ_NUXT_ENV))
   process.exit(0)
 }
 
@@ -322,4 +341,4 @@ if (!(await pathExists(nuxiBinary))) {
 }
 
 console.log('[stackblitz] isolated runtime ready; starting Nuxt playground')
-await run(nuxiBinary, ['dev', '--host'], nuxtAppRoot)
+await run(nuxiBinary, NUXT_DEV_ARGS, nuxtAppRoot, STACKBLITZ_NUXT_ENV)

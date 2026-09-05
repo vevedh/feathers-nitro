@@ -27,8 +27,13 @@ const REQUIRED_BOOTSTRAP_SNIPPETS = [
   "await symlink(relative(projectRoot, runtimeModulesDirectory), rootModulesDirectory, 'dir')",
   "await symlink(relative(nuxtAppRoot, runtimeModulesDirectory), nuxtAppModulesDirectory, 'dir')",
   "await symlink(relative(runtimeModulesDirectory, feathersApiRoot), feathersApiLink, 'dir')",
-  "await run(nuxiBinary, ['dev', '--host'], nuxtAppRoot)",
   "process.env.STACKBLITZ_BOOTSTRAP_DRY_RUN === '1'",
+  "const STACKBLITZ_NUXT_ENV = {",
+  "FEATHERS_NITRO_STACKBLITZ: '1'",
+  "const NUXT_DEV_ARGS = [",
+  "'--port'",
+  "'3000'",
+  "await run(nuxiBinary, NUXT_DEV_ARGS, nuxtAppRoot, STACKBLITZ_NUXT_ENV)",
 ]
 
 const FORBIDDEN_BOOTSTRAP_SNIPPETS = [
@@ -66,6 +71,7 @@ const [
   stackblitzContent,
   bootstrapContent,
   gitignoreContent,
+  nuxtConfigContent,
   feathersApiNpmrcAbsent,
   nuxtAppNpmrcAbsent,
 ] = await Promise.all([
@@ -73,6 +79,7 @@ const [
   readUtf8('.stackblitzrc'),
   readUtf8('scripts/stackblitz-bootstrap.mjs'),
   readUtf8('.gitignore'),
+  readUtf8('playground/nuxt-app/nuxt.config.ts'),
   pathIsAbsent('playground/feathers-api/.npmrc'),
   pathIsAbsent('playground/nuxt-app/.npmrc'),
 ])
@@ -117,6 +124,14 @@ if (!bootstrapContent.includes("typeCheck: true")) {
   violations.push('StackBlitz tooling-layer shim must preserve TypeScript type checking')
 }
 
+if (!nuxtConfigContent.includes("process.env.FEATHERS_NITRO_STACKBLITZ === '1' ? false : undefined")) {
+  violations.push('Nuxt playground must disable Vite HMR only for the StackBlitz bootstrap flag')
+}
+
+if (!nuxtConfigContent.includes('vite: {') || !nuxtConfigContent.includes('hmr:')) {
+  violations.push('Nuxt playground must keep the StackBlitz-specific Vite HMR guard')
+}
+
 for (const snippet of REQUIRED_BOOTSTRAP_SNIPPETS) {
   if (!bootstrapContent.includes(snippet)) {
     violations.push(`scripts/stackblitz-bootstrap.mjs is missing required contract: ${snippet}`)
@@ -151,6 +166,7 @@ if (violations.length > 0) {
 else {
   console.log(
     `StackBlitz uses an isolated npm runtime derived from the pnpm ${EXPECTED_PNPM_VERSION} lockfile, `
-      + 'links the root and Nuxt playground to that runtime, links feathers-api locally, and launches nuxi directly.',
+      + 'links the root and Nuxt playground to that runtime, links feathers-api locally, '
+      + 'and launches Nuxt on port 3000 with separate Vite HMR disabled only in StackBlitz.',
   )
 }

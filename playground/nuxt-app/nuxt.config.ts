@@ -15,6 +15,12 @@ export default defineNuxtConfig({
 
   devtools: { enabled: true },
 
+  vite: {
+    server: {
+      hmr: process.env.FEATHERS_NITRO_STACKBLITZ === '1' ? false : undefined,
+    },
+  },
+
   runtimeConfig: {
     public: {
       feathersBaseUrl: '',

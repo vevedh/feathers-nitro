@@ -97,6 +97,8 @@ The generated `.stackblitz-runtime/` directory is gitignored and never belongs i
 
 `pnpm check:stackblitz` verifies that this isolated-runtime contract remains in place and rejects the older pnpm/npx/workspace-`.npmrc` workarounds.
 
+For the WebContainer preview, the bootstrap starts Nuxt explicitly on port `3000` and sets a StackBlitz-only flag that disables Vite's separate HMR server. Nuxt 4.4.8 otherwise opens HMR on port `24678`, which StackBlitz can mistakenly select as the Preview and display as `426 Upgrade Required`. Local development and CI keep the normal Vite HMR behavior.
+
 ## Development
 
 ```bash
