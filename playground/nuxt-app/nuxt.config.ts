@@ -1,3 +1,5 @@
+import process from 'node:process'
+
 export default defineNuxtConfig({
   compatibilityDate: '2026-07-10',
 
@@ -8,6 +10,8 @@ export default defineNuxtConfig({
   modules: [
     '@pinia/nuxt',
   ],
+
+  css: ['~/assets/css/main.css'],
 
   imports: {
     autoImport: true,

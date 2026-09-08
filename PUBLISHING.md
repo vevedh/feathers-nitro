@@ -1,70 +1,51 @@
 # Publishing `@vevedh/feathers-nitro`
 
-## Automated GitHub + npm publication
+## Stable 0.6.0 release
 
-With authenticated GitHub CLI and npm sessions, run:
+Patch 018 records `0.6.0` as Windows release-certified. `pnpm release:certify` has passed end to end on Node `22.20.0` with pnpm `10.34.5`, including the six built-showcase smoke scenarios, strict tarball audit and npm public/latest dry-run. Publication is still allowed only after the local visual playground review and a real StackBlitz/WebContainer preview are green.
 
-```powershell
-./scripts/bootstrap-and-publish.ps1
-```
-
-The helper creates the public GitHub repository when needed, pushes `main` and `v0.5.0`, verifies npm authentication, rejects an already-published version, and publishes directly to npm.
-
-## 1. Create the GitHub repository
-
-Create the empty public repository:
-
-- owner: `vevedh`
-- name: `feathers-nitro`
-- URL: `https://github.com/vevedh/feathers-nitro`
-
-Do not initialize it with a README, license, or `.gitignore`; this project already contains them.
-
-## 2. Prepare and publish Git
-
-For a new repository, initialize the validated `0.5.0` baseline with:
+## 1. Validate the exact release tree
 
 ```powershell
-./scripts/reset-git.ps1
-git push -u origin main
-git push origin v0.5.0
+corepack prepare pnpm@10.34.5 --activate
+pnpm install --frozen-lockfile
+pnpm release:certify
 ```
 
-For an existing repository, commit the Nuxt 4 migration normally, create the tag, and push:
+`pnpm release:certify` runs `pnpm verify` and then `npm publish --dry-run`. The verification chain includes runtime, identity, dependency, Nuxt stack, release-readiness, type, lint, lower-level integration tests, the real Nuxt showcase smoke suite, `pnpm pack`, and a strict tarball-content audit.
+
+The certified Windows run produced a 39-file tarball containing only `dist/**`, `README.md`, `LICENSE`, and `package.json`; npm accepted the dry-run for `@vevedh/feathers-nitro@0.6.0` with public access and the `latest` tag. The `[DEP0155]` messages seen in Nuxt/Feathers Koa test processes are upstream/transitive Node deprecation warnings and are not suppressed by this project.
+
+## 2. Review the live showcase
+
+```powershell
+pnpm --filter nuxt-app dev
+```
+
+Review `/`, `/adapters`, `/multi-instance`, authenticate with the seeded `test` / `12345` account, then validate `/messages` in two browser tabs so a created message is received as a realtime event. Repeat the preview in StackBlitz before tagging the stable release.
+
+## 3. Commit and tag
 
 ```powershell
 git add -A
-git commit -m "feat: migrate to Nuxt 4 and release v0.5.0"
-git tag -a v0.5.0 -m "@vevedh/feathers-nitro v0.5.0"
+git commit -m "release: @vevedh/feathers-nitro v0.6.0"
+git tag -a v0.6.0 -m "@vevedh/feathers-nitro v0.6.0"
 git push origin main
-git push origin v0.5.0
+git push origin v0.6.0
 ```
 
-## 3. Authenticate with npm
+## 4. Authenticate and publish
 
 ```powershell
 npm login --registry=https://registry.npmjs.org/
 npm whoami --registry=https://registry.npmjs.org/
-```
-
-The authenticated account must own or be allowed to publish under the `@vevedh` scope.
-
-## 4. Verify and publish directly
-
-```powershell
-pnpm i --frozen-lockfile
-pnpm verify
-pnpm publish --access public --registry=https://registry.npmjs.org/ --no-git-checks
-```
-
-The PowerShell helper performs the Git push, npm authentication check, duplicate-version check, and direct npm publication:
-
-```powershell
 ./scripts/publish-direct.ps1
 ```
 
-## 5. Confirm the publication
+The helper reads the version directly from `package.json`, reruns `pnpm release:certify`, requires the Git tag to point to the current `HEAD`, rejects an already-published version, publishes with public access and confirms the `latest` dist-tag.
+
+## 5. Verify npm
 
 ```powershell
-npm view @vevedh/feathers-nitro@0.5.0 name version dist-tags.latest dist.tarball --registry=https://registry.npmjs.org/
+npm view @vevedh/feathers-nitro@0.6.0 name version dist-tags.latest dist.tarball --registry=https://registry.npmjs.org/
 ```

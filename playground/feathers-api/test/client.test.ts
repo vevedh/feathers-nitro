@@ -11,7 +11,7 @@ import { app } from '../src/app-express'
 import { createClient } from '../src/client'
 
 app.use(notFound())
-app.use(errorHandler())
+app.use(errorHandler({ logger: false }))
 
 const port = app.get('port')
 const appUrl = `http://${app.get('host')}:${port}`

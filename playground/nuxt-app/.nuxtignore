@@ -1,1 +1,1 @@
-server/plugins/*-IGNORE.ts
+# Integration examples live under server/examples/ and are not auto-loaded as plugins.

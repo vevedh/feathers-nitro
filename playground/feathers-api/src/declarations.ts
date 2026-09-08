@@ -1,7 +1,11 @@
 // For more information about this file see https://dove.feathersjs.com/guides/cli/typescript.html
 
 import type { Application as FeathersExpressApplication } from '@feathersjs/express'
-import type { HookContext as FeathersHookContext, NextFunction } from '@feathersjs/feathers'
+import type {
+  Application as FeathersApplication,
+  HookContext as FeathersHookContext,
+  NextFunction,
+} from '@feathersjs/feathers'
 import type { Application as FeathersKoaApplication } from '@feathersjs/koa'
 import type { ApplicationConfiguration } from './configuration'
 import type { User } from './services/users/users'
@@ -18,11 +22,12 @@ export interface ServiceTypes {}
 export type ExpressApplication = FeathersExpressApplication<ServiceTypes, Configuration>
 export type KoaApplication = FeathersKoaApplication<ServiceTypes, Configuration>
 
-// Select current adapter
-export type Application = ExpressApplication
+// Shared adapter-neutral application contract used by services, auth, channels and setup hooks.
+// ExpressApplication and KoaApplication remain available where host-specific APIs are required.
+export type Application = FeathersApplication<ServiceTypes, Configuration>
 
-// The context for hook functions - can be typed with a service class
-export type HookContext<S = any> = FeathersHookContext<ExpressApplication | KoaApplication, S>
+// The context for shared hook functions - can be typed with a service class.
+export type HookContext<S = any> = FeathersHookContext<Application, S>
 
 // Add the users as an optional property to all params
 declare module '@feathersjs/feathers' {

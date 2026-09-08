@@ -11,7 +11,7 @@ Nitro adapter plugin for FeathersJS APIs. It integrates Feathers applications wi
 
 ## Requirements
 
-- Node.js `^22.12.0`, `^24.11.0`, or `>=26.0.0`
+- Node.js `^22.19.0`, `^24.11.0`, or `>=26.0.0` (Node `22.20.0` is the recommended pinned development baseline)
 - Nuxt 4 / Nitro 2
 - FeathersJS `^5.0.49`
 
@@ -81,7 +81,7 @@ import { /* request handlers */ } from '@vevedh/feathers-nitro/handlers'
 import { /* setup helpers */ } from '@vevedh/feathers-nitro/setup'
 ```
 
-The [`playground`](./playground/) directory contains a Nuxt 4 example combining REST, Socket.IO, Pinia 3, and authentication without the obsolete `nuxt-feathers-pinia` auto-import layer.
+The [`playground`](./playground/) directory is a runnable Nuxt 4 showcase covering Express, a complete Koa application, REST during SSR, Socket.IO realtime events, Pinia 3 authentication state, JWT re-authentication, typed services, and multi-instance examples.
 
 ### StackBlitz WebContainer
 
@@ -97,18 +97,21 @@ The generated `.stackblitz-runtime/` directory is gitignored and never belongs i
 
 `pnpm check:stackblitz` verifies that this isolated-runtime contract remains in place and rejects the older pnpm/npx/workspace-`.npmrc` workarounds.
 
-For the WebContainer preview, the bootstrap starts Nuxt explicitly on port `3000` and sets a StackBlitz-only flag that disables Vite's separate HMR server. Nuxt 4.4.8 otherwise opens HMR on port `24678`, which StackBlitz can mistakenly select as the Preview and display as `426 Upgrade Required`. Local development and CI keep the normal Vite HMR behavior.
+For the WebContainer preview, the bootstrap starts Nuxt explicitly on port `3000` and keeps the StackBlitz-only HMR disable that was validated with Patch 012. Nuxt 4.5.2 now prefers attaching Vite HMR to Nuxt's own dev-server listener, but the conservative WebContainer guard remains enabled until the upgraded stack is validated in StackBlitz. Local development and CI keep normal Vite HMR behavior.
 
 ## Development
 
 ```bash
+node --version
 corepack enable
 corepack prepare pnpm@10.34.5 --activate
 pnpm install --frozen-lockfile
 pnpm verify
 ```
 
-`pnpm verify` validates package identity, lockfile portability, the coordinated FeathersJS 5.0.49 dependency train, the tooling bridge (Vitest 4.1.10 / Vue TSC 3.3.11), the Vitest retry classifier, strict TypeScript, ESLint, Feathers/Nuxt integration tests, StackBlitz bootstrap invariants, and the npm tarball contents.
+Patch 015-r1 includes the Windows-generated and Windows-validated coordinated lockfile. Normal development and CI therefore use `pnpm install --frozen-lockfile`; do not regenerate the lockfile unless a dependency change is intentional and will be revalidated through the complete integration gate.
+
+`pnpm verify` first validates the Node.js runtime floor, then package identity, lockfile portability, the coordinated FeathersJS 5.0.49 dependency train, the Nuxt/Vite/Vue stack contract, the Vitest retry classifier, strict TypeScript, ESLint, Feathers/Nuxt integration tests, the real showcase playground smoke suite, StackBlitz bootstrap invariants, and the exact npm tarball contents. The tarball audit rejects any repository-only file outside `dist/`, `README.md`, `LICENSE`, and `package.json`.
 
 Dependency maintenance is based on Taze with a 14-day maturity period:
 
@@ -117,11 +120,23 @@ pnpm deps:check:recursive
 pnpm deps:update:safe:recursive
 ```
 
-pnpm enforces the same 14-day maturity window when resolving new versions. Dependency install scripts are denied by default except for the reviewed native/build helpers required by this workspace (`esbuild`, `@parcel/watcher`, and `unrs-resolver`).
+pnpm enforces the same 14-day maturity window when resolving new versions. Patch 015 temporarily exempts only the reviewed Nuxt/Vite/Vue test-tooling train and `magic-string`, because several exact releases are still inside that window; the exceptions are documented in `pnpm-workspace.yaml` and should be removed once the releases mature. Dependency install scripts are denied by default except for the reviewed native/build helpers required by this workspace (`esbuild`, `@parcel/watcher`, and `unrs-resolver`).
 
 Review Nuxt, Nitro, H3, TypeScript, Vitest, Feathers, and other coordinated or major upgrades independently before regenerating the lockfile.
 
-The current compatibility bridge intentionally keeps Nuxt `4.4.8`, `@nuxt/test-utils` `4.0.3`, Nitro `2.13.4`, H3 `1.15.11`, and the validated Vue runtime graph unchanged while using Vitest `4.1.10` and Vue TSC `3.3.11` directly. Nuxt `4.5.x` is reviewed separately because it raises the Node.js floor and moves the coordinated Vite/Vue graph.
+Patch 015-r1 is the Windows-validated coordinated baseline: Nuxt `4.5.2`, Vite `8.2.2`, Vue `3.5.42`, `@nuxt/test-utils` `4.2.0`, Vitest `4.1.11`, Rolldown `1.2.4`, and Vue TSC `3.3.11`, while FeathersJS `5.0.49`, Nitro `2.13.4`, H3 `1.15.11`, direct/root TypeScript `5.9.3`, Node `22.20.0`, and pnpm `10.34.5` remain pinned. The checked-in lockfile has passed the complete Windows `pnpm verify` gate and subsequent installs use `--frozen-lockfile`. The upgraded StackBlitz graph still keeps the conservative WebContainer HMR guard until a real Nuxt 4.5.2 preview run is validated.
+
+### Showcase smoke test
+
+The release suite boots the actual `playground/nuxt-app` with `@nuxt/test-utils` and validates the public pages, seeded Express REST API, local authentication, authenticated SSR rendering, and a live Socket.IO `created` event:
+
+```bash
+pnpm test:showcase
+```
+
+This complements the lower-level Express/Koa/Socket.IO fixtures and ensures the public playground remains executable rather than documentation-only.
+
+Patch 018 records the complete Windows `pnpm release:certify` pass for `0.6.0`: all six built-showcase scenarios pass, the generated tarball is restricted to 39 publish-safe files, and `npm publish --dry-run` accepts the package as public with the `latest` tag. A real StackBlitz/WebContainer preview remains required before the final npm publish.
 
 ## Publishing
 
@@ -133,7 +148,7 @@ pnpm verify
 pnpm publish --access public --registry=https://registry.npmjs.org/ --no-git-checks
 ```
 
-Before publication, create the `vevedh/feathers-nitro` repository, authenticate with npm, and follow [`PUBLISHING.md`](./PUBLISHING.md). On Windows, `./scripts/publish-direct.ps1` validates the project, pushes `main` and `v0.5.0`, then publishes the public scoped package directly to npm.
+Before publication, authenticate with npm and follow [`PUBLISHING.md`](./PUBLISHING.md). Patch 017 added the release-certification automation, and Patch 018 records its complete Windows pass for version `0.6.0` without changing the runtime implementation. `pnpm release:certify` runs the complete verification gate followed by an npm publish dry-run. On Windows, `./scripts/publish-direct.ps1` reads the current package version, validates the exact tree, requires `v0.6.0` to point to `HEAD`, rejects duplicate publication, and publishes the scoped package with public access.
 
 ## Attribution
 

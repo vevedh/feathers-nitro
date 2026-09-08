@@ -3,7 +3,8 @@ $ErrorActionPreference = 'Stop'
 $RepositoryName = 'vevedh/feathers-nitro'
 $RepositoryUrl = 'https://github.com/vevedh/feathers-nitro.git'
 $Package = '@vevedh/feathers-nitro'
-$Version = '0.5.0'
+$PackageJson = Get-Content -Raw -Path (Join-Path $PSScriptRoot '..\package.json') | ConvertFrom-Json
+$Version = $PackageJson.version
 $Registry = 'https://registry.npmjs.org/'
 
 if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
@@ -15,9 +16,9 @@ if ($LASTEXITCODE -ne 0) {
   throw 'Authenticate GitHub CLI first with: gh auth login'
 }
 
-pnpm verify
+pnpm release:certify
 if ($LASTEXITCODE -ne 0) {
-  throw 'pnpm verify failed; publication cancelled.'
+  throw 'pnpm release:certify failed; publication cancelled.'
 }
 
 $repoExists = $true

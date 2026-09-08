@@ -9,7 +9,7 @@ import axios from 'axios'
 import { app } from '../src/app-express'
 
 app.use(notFound())
-app.use(errorHandler())
+app.use(errorHandler({ logger: false }))
 
 const port = app.get('port')
 const appUrl = `http://${app.get('host')}:${port}`

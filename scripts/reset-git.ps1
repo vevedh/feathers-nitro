@@ -1,15 +1,14 @@
 $ErrorActionPreference = 'Stop'
 
 $Remote = 'https://github.com/vevedh/feathers-nitro.git'
-$Version = '0.5.0'
+$PackageJson = Get-Content -Raw -Path (Join-Path $PSScriptRoot '..\package.json') | ConvertFrom-Json
+$Version = $PackageJson.version
 
 if (Test-Path '.git') {
   Remove-Item -Recurse -Force '.git'
 }
 
 git init -b main
-git config user.name 'Hervé de CHAVIGNY'
-git config user.email 'vevedh@gmail.com'
 git remote add origin $Remote
 git add -A
 git commit -m "feat: initialize @vevedh/feathers-nitro v$Version"

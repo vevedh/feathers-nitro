@@ -23,7 +23,10 @@ const ROOT_DEV_RUNTIME_PACKAGES = new Set([
   '@types/node',
   'nuxi',
   'nuxt',
+  'rolldown',
   'typescript',
+  'vite',
+  'vue',
   'vue-tsc',
 ])
 
@@ -55,7 +58,7 @@ function formatCommand(command, args, cwd, envOverrides = {}) {
     .map(([name, value]) => `${name}=${JSON.stringify(value)}`)
     .join(' ')
   const commandLine = [command, ...args]
-    .map((value) => JSON.stringify(value))
+    .map(value => JSON.stringify(value))
     .join(' ')
   const prefix = environment ? `${environment} ` : ''
   return `(cd ${JSON.stringify(cwd)} && ${prefix}${commandLine})`
@@ -103,7 +106,7 @@ async function pathExists(pathname) {
 function unquoteYamlScalar(value) {
   const trimmed = value.trim()
   if (
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+    (trimmed.startsWith('\'') && trimmed.endsWith('\''))
     || (trimmed.startsWith('"') && trimmed.endsWith('"'))
   ) {
     return trimmed.slice(1, -1)
@@ -139,13 +142,18 @@ function parseImporterVersions(lockfileContent, importerName) {
       continue
     }
 
-    if (/^[^\s].*:\s*$/u.test(line)) {
+    if (line.length > 0 && !line.startsWith(' ')) {
       break
     }
 
-    const importerMatch = /^  ([^\s].*):\s*$/u.exec(line)
-    if (importerMatch) {
-      insideTargetImporter = unquoteYamlScalar(importerMatch[1]) === importerName
+    const trimmedLine = line.trim()
+    const isImporterLine = [
+      line.startsWith('  '),
+      !line.startsWith('    '),
+      trimmedLine.endsWith(':'),
+    ].every(Boolean)
+    if (isImporterLine) {
+      insideTargetImporter = unquoteYamlScalar(trimmedLine.slice(0, -1)) === importerName
       dependencyGroup = null
       dependencyName = null
       continue
@@ -155,9 +163,14 @@ function parseImporterVersions(lockfileContent, importerName) {
       continue
     }
 
-    const groupMatch = /^    (dependencies|devDependencies|optionalDependencies):\s*$/u.exec(line)
-    if (groupMatch) {
-      dependencyGroup = groupMatch[1]
+    const groupName = trimmedLine.endsWith(':') ? trimmedLine.slice(0, -1) : ''
+    const isDependencyGroup = [
+      line.startsWith('    '),
+      !line.startsWith('      '),
+      ['dependencies', 'devDependencies', 'optionalDependencies'].includes(groupName),
+    ].every(Boolean)
+    if (isDependencyGroup) {
+      dependencyGroup = groupName
       dependencyName = null
       continue
     }
@@ -166,22 +179,23 @@ function parseImporterVersions(lockfileContent, importerName) {
       continue
     }
 
-    const dependencyMatch = /^      (.+):\s*$/u.exec(line)
-    if (dependencyMatch) {
-      dependencyName = unquoteYamlScalar(dependencyMatch[1])
+    const isDependencyLine = [
+      line.startsWith('      '),
+      !line.startsWith('        '),
+      trimmedLine.endsWith(':'),
+    ].every(Boolean)
+    if (isDependencyLine) {
+      dependencyName = unquoteYamlScalar(trimmedLine.slice(0, -1))
       continue
     }
 
-    if (!dependencyName) {
+    if (!dependencyName || !line.startsWith('        version:')) {
       continue
     }
 
-    const versionMatch = /^        version:\s+(.+)$/u.exec(line)
-    if (versionMatch) {
-      const version = normalizeLockedVersion(versionMatch[1])
-      if (version) {
-        versions.set(dependencyName, version)
-      }
+    const version = normalizeLockedVersion(line.slice('        version:'.length))
+    if (version) {
+      versions.set(dependencyName, version)
     }
   }
 
@@ -252,14 +266,14 @@ async function buildStandaloneRuntimeManifest() {
     rootManifest,
     rootLockedVersions,
     ['devDependencies'],
-    (dependencyName) => ROOT_DEV_RUNTIME_PACKAGES.has(dependencyName),
+    dependencyName => ROOT_DEV_RUNTIME_PACKAGES.has(dependencyName),
   )
   addDependencies(
     runtimeDependencies,
     nuxtAppManifest,
     nuxtLockedVersions,
     ['dependencies', 'devDependencies'],
-    (dependencyName) => dependencyName !== NUXT_ESLINT_LAYER_NAME,
+    dependencyName => dependencyName !== NUXT_ESLINT_LAYER_NAME,
   )
   addDependencies(runtimeDependencies, feathersApiManifest, feathersLockedVersions, ['dependencies'])
 
@@ -290,9 +304,17 @@ async function createNuxtEslintLayerShim(version) {
     }, null, 2)}\n`,
     'utf8',
   )
+  const nuxtConfigContent = [
+    'export default {',
+    '  typescript: {',
+    '    typeCheck: true,',
+    '  },',
+    '}',
+    '',
+  ].join('\n')
   await writeFile(
     join(NUXT_ESLINT_LAYER_ROOT, 'nuxt.config.ts'),
-    "export default {\n  typescript: {\n    typeCheck: true,\n  },\n}\n",
+    nuxtConfigContent,
     'utf8',
   )
 }

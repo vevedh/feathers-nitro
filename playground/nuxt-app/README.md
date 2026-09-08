@@ -1,19 +1,39 @@
-# Nuxt 4 playground
+# Nuxt 4 showcase playground
 
-This workspace validates `@vevedh/feathers-nitro` against Nuxt 4 with
-Express, Socket.IO, Pinia 3, SSR authentication, and the native Nuxt 4
-`app/` directory structure.
+This workspace is both an integration fixture and a runnable product showcase for `@vevedh/feathers-nitro`.
 
-## Requirements
+## What it demonstrates
 
-- Node.js 22.12 or newer supported by Nuxt 4
-- pnpm 10.34.5
+- Express application mounted in Nitro
+- complete Koa Feathers application
+- Socket.IO realtime events in the browser
+- REST transport during SSR
+- local authentication + JWT cookie persistence + SSR re-authentication
+- Pinia 3 authentication state
+- typed Feathers services
+- multi-instance setup examples
 
-## Commands
+## Run
 
 ```bash
 pnpm install --frozen-lockfile
 pnpm --filter nuxt-app dev
-pnpm --filter nuxt-app build
-pnpm --filter nuxt-app test:types
 ```
+
+Open `http://localhost:3000`. The public seeded playground account is `test` / `12345`.
+
+The files under `server/examples/` are copyable integration examples and are not auto-loaded by Nuxt.
+
+Normal playground commands run from this workspace and load its `config/` directory directly.
+The root release smoke harness also provides absolute node-config and public paths before
+`@nuxt/test-utils` launches its production-mode child process from the monorepo root.
+
+## Automated release smoke coverage
+
+From the repository root, run:
+
+```bash
+pnpm test:showcase
+```
+
+The smoke suite boots this exact Nuxt application and validates `/`, `/adapters`, `/multi-instance`, the seeded Express REST endpoint, `test` local authentication, authenticated SSR rendering of `/messages`, and a real Socket.IO `messages created` event.

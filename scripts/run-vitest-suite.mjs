@@ -19,6 +19,7 @@ const testFiles = [
   'test/koa.test.ts',
   'test/socket.io-path.test.ts',
   'test/socket.io.test.ts',
+  'test/playground-showcase.test.ts',
 ]
 
 /**

@@ -56,5 +56,3 @@ app.configure(authentication)
 app.configure(services)
 app.configure(channels)
 app.configure(dummy)
-
-console.warn('app-express.ts')

@@ -23,7 +23,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.20.0
 
       - name: Enable pinned pnpm
         run: |
@@ -34,11 +34,26 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Validate Node runtime policy
+        run: pnpm check:runtime
+
       - name: Validate package identity
         run: pnpm check:identity
 
+      - name: Validate FeathersJS suite
+        run: pnpm check:feathers-suite
+
+      - name: Validate StackBlitz contract
+        run: pnpm check:stackblitz
+
+      - name: Validate coordinated Nuxt stack
+        run: pnpm check:nuxt-stack
+
       - name: Validate package-manager portability
         run: pnpm check:portability
+
+      - name: Validate release readiness
+        run: pnpm check:release
 
       - name: Validate Vitest retry classifier
         run: pnpm check:test-runner
@@ -54,3 +69,6 @@ jobs:
 
       - name: Validate package contents
         run: pnpm pack:check
+
+      - name: Validate packed npm artifact
+        run: pnpm check:artifact

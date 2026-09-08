@@ -4,6 +4,16 @@ packages:
 # Reproducibility and supply-chain policy for pnpm 10.x.
 packageManagerStrictVersion: true
 minimumReleaseAge: 20160
+# Temporary Patch 015 maturity exceptions for the reviewed coordinated Nuxt/Vite/Vue train.
+# Remove once these releases have all cleared the 14-day window.
+minimumReleaseAgeExclude:
+  - '@nuxt/test-utils'
+  - '@vue/*'
+  - '@vitest/*'
+  - 'magic-string'
+  - 'vite'
+  - 'vitest'
+  - 'vue'
 allowBuilds:
   esbuild: true
   '@parcel/watcher': true
@@ -37,7 +47,11 @@ catalog:
   'cross-env': '10.1.0'
   'mocha': '11.7.6'
   'nodemon': '^3.1.14'
-  'nuxt': '4.4.8'
+  'nuxt': '4.5.2'
+  'rolldown': '1.2.4'
+  'vite': '8.2.2'
+  'vitest': '4.1.11'
+  'vue': '3.5.42'
   'ofetch': '^1.5.1'
   'pinia': '3.0.4'
   'prettier': '^3.9.4'
