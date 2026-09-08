@@ -14,6 +14,7 @@ const REQUIRED_BOOTSTRAP_SNIPPETS = [
   '  \'vite\',',
   '  \'vue\',',
   'const lockfilePath = join(projectRoot, \'pnpm-lock.yaml\')',
+  'const rootNuxtTsconfigPath = join(projectRoot, \'.nuxt\', \'tsconfig.json\')',
   'parseImporterVersions(lockfileContent, \'.\')',
   'parseImporterVersions(lockfileContent, \'playground/nuxt-app\')',
   'parseImporterVersions(lockfileContent, \'playground/feathers-api\')',
@@ -24,6 +25,8 @@ const REQUIRED_BOOTSTRAP_SNIPPETS = [
   '\'--package-lock=false\'',
   '\'--legacy-peer-deps\'',
   'await run(\'npm\', NPM_INSTALL_ARGS, runtimeRoot)',
+  'await run(nuxiBinary, [\'prepare\'], projectRoot, STACKBLITZ_NUXT_ENV)',
+  'Expected repository-root Nuxt tsconfig',
   'async function createNuxtEslintLayerShim(version)',
   'main: \'./nuxt.config.ts\'',
   'await createNuxtEslintLayerShim(nuxtEslintLayerVersion)',
@@ -169,6 +172,7 @@ else {
   console.log([
     `StackBlitz uses an isolated npm runtime derived from the pnpm ${EXPECTED_PNPM_VERSION} lockfile,`,
     'links the root and Nuxt playground to that runtime, links feathers-api locally,',
+    'prepares the repository-root Nuxt tsconfig for Vite/Oxc discovery,',
     'and launches Nuxt on port 3000 with separate Vite HMR disabled only in StackBlitz.',
   ].join(' '))
 }

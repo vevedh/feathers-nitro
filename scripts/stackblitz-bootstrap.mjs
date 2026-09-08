@@ -18,6 +18,7 @@ const lockfilePath = join(projectRoot, 'pnpm-lock.yaml')
 const rootPackagePath = join(projectRoot, 'package.json')
 const nuxtAppPackagePath = join(nuxtAppRoot, 'package.json')
 const feathersApiPackagePath = join(feathersApiRoot, 'package.json')
+const rootNuxtTsconfigPath = join(projectRoot, '.nuxt', 'tsconfig.json')
 
 const ROOT_DEV_RUNTIME_PACKAGES = new Set([
   '@types/node',
@@ -340,6 +341,7 @@ if (process.env.STACKBLITZ_BOOTSTRAP_DRY_RUN === '1') {
   console.log(formatCommand('npm', NPM_INSTALL_ARGS, runtimeRoot))
   console.log('[stackblitz] link root and nuxt-app node_modules to .stackblitz-runtime/node_modules')
   console.log('[stackblitz] link .stackblitz-runtime/node_modules/feathers-api to playground/feathers-api')
+  console.log(formatCommand(nuxiBinary, ['prepare'], projectRoot, STACKBLITZ_NUXT_ENV))
   console.log(formatCommand(nuxiBinary, NUXT_DEV_ARGS, nuxtAppRoot, STACKBLITZ_NUXT_ENV))
   process.exit(0)
 }
@@ -360,6 +362,12 @@ await createNuxtEslintLayerShim(nuxtEslintLayerVersion)
 await createRuntimeLinks()
 if (!(await pathExists(nuxiBinary))) {
   throw new Error(`Expected Nuxt CLI at ${nuxiBinary} after isolated npm install`)
+}
+
+console.log('[stackblitz] preparing repository-root Nuxt types for Vite/Oxc tsconfig discovery')
+await run(nuxiBinary, ['prepare'], projectRoot, STACKBLITZ_NUXT_ENV)
+if (!(await pathExists(rootNuxtTsconfigPath))) {
+  throw new Error(`Expected repository-root Nuxt tsconfig at ${rootNuxtTsconfigPath}`)
 }
 
 console.log('[stackblitz] isolated runtime ready; starting Nuxt playground')

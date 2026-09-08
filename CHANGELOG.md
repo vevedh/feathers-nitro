@@ -19,6 +19,11 @@ All notable changes to this fork are documented in this file.
 
 ### Fixed
 
+- Prepared the repository-root Nuxt type scaffold inside the StackBlitz isolated bootstrap before launching the playground, closing the Vite 8/Oxc `TSCONFIG_ERROR` raised when WebContainer transformed Nuxt middleware while the root `tsconfig.json` still referenced a missing `.nuxt/tsconfig.json`.
+- Extended the StackBlitz contract gate to require that root `nuxi prepare` step and the generated root tsconfig assertion; package runtime, dependencies, lockfile and npm payload remain unchanged from the Windows-certified `0.6.0` candidate.
+
+### Fixed
+
 - Moved the built-showcase node-config/public-path bootstrap into the release smoke harness before `@nuxt/test-utils` starts its production child process, and restored the embedded Nitro plugins to their synchronous adapter exports. This preserves correct built-test configuration without top-level await or async callbacks where Nitro expects `void`.
 - Removed the duplicated blank line in the Nuxt playground README that stopped the first Patch 017 `release:certify` run at workspace lint; release certification logic and runtime behavior are unchanged.
 - Normalized the 0.6.0 showcase stylesheet to the repository Prettier contract and reordered imports in the four server examples, closing the final 39 workspace-lint diagnostics reported by Patch 016-r2 without changing runtime behavior.

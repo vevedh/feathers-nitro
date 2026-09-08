@@ -91,7 +91,7 @@ The project itself remains pinned to pnpm `10.34.5` for local development, CI, v
 
 The npm runtime intentionally excludes `@gabortorma/nuxt-eslint-layer@1.0.0`: that package's published/source manifest uses pnpm `catalog:` dependency specifiers, which npm cannot parse. The bootstrap instead creates a local lock-versioned shim for that tooling-only layer that preserves TypeScript checking but omits the ESLint checker inside StackBlitz. Windows, CI, and release verification continue to use the real layer through pnpm.
 
-After that isolated install, the bootstrap links the repository root and Nuxt playground `node_modules` paths to `.stackblitz-runtime/node_modules`, links `feathers-api` back to the checked-in workspace source, and starts Nuxt directly through the isolated `nuxi` binary. This keeps the demo source identical to the pnpm workspace while avoiding pnpm's current WebContainer `realpath(.../node_modules)` failure during recursive workspace installation.
+After that isolated install, the bootstrap links the repository root and Nuxt playground `node_modules` paths to `.stackblitz-runtime/node_modules`, links `feathers-api` back to the checked-in workspace source, runs a repository-root `nuxi prepare`, and then starts the Nuxt playground directly through the isolated `nuxi` binary. The root prepare is required for Vite 8/Oxc tsconfig discovery in WebContainer because the repository `tsconfig.json` extends `./.nuxt/tsconfig.json`; the bootstrap asserts that generated file exists before serving the preview. This keeps the demo source identical to the pnpm workspace while avoiding pnpm's current WebContainer `realpath(.../node_modules)` failure during recursive workspace installation.
 
 The generated `.stackblitz-runtime/` directory is gitignored and never belongs in the npm package. No project manifest, pnpm catalog, or lockfile is rewritten by the StackBlitz bootstrap.
 
@@ -136,7 +136,7 @@ pnpm test:showcase
 
 This complements the lower-level Express/Koa/Socket.IO fixtures and ensures the public playground remains executable rather than documentation-only.
 
-Patch 018 records the complete Windows `pnpm release:certify` pass for `0.6.0`: all six built-showcase scenarios pass, the generated tarball is restricted to 39 publish-safe files, and `npm publish --dry-run` accepts the package as public with the `latest` tag. A real StackBlitz/WebContainer preview remains required before the final npm publish.
+Patch 018 records the complete Windows `pnpm release:certify` pass for `0.6.0`: all six built-showcase scenarios pass, the generated tarball is restricted to 39 publish-safe files, and `npm publish --dry-run` accepts the package as public with the `latest` tag. The first real Nuxt 4.5.2 / Vite 8.2.2 StackBlitz run then exposed a WebContainer-only Vite/Oxc tsconfig lookup failure because the root `.nuxt/tsconfig.json` had never been generated; Patch 019 adds an explicit repository-root `nuxi prepare` to the isolated bootstrap. Revalidate that live preview before the final npm publish.
 
 ## Publishing
 
