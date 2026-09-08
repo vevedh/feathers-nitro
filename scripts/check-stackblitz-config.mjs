@@ -25,7 +25,7 @@ const REQUIRED_BOOTSTRAP_SNIPPETS = [
   '\'--package-lock=false\'',
   '\'--legacy-peer-deps\'',
   'await run(\'npm\', NPM_INSTALL_ARGS, runtimeRoot)',
-  'await run(nuxiBinary, [\'prepare\'], projectRoot, STACKBLITZ_NUXT_ENV)',
+  'await run(nuxiBinary, [\'prepare\'], projectRoot)',
   'Expected repository-root Nuxt tsconfig',
   'async function createNuxtEslintLayerShim(version)',
   'main: \'./nuxt.config.ts\'',
@@ -34,12 +34,10 @@ const REQUIRED_BOOTSTRAP_SNIPPETS = [
   'await symlink(relative(nuxtAppRoot, runtimeModulesDirectory), nuxtAppModulesDirectory, \'dir\')',
   'await symlink(relative(runtimeModulesDirectory, feathersApiRoot), feathersApiLink, \'dir\')',
   'process.env.STACKBLITZ_BOOTSTRAP_DRY_RUN === \'1\'',
-  'const STACKBLITZ_NUXT_ENV = {',
-  'FEATHERS_NITRO_STACKBLITZ: \'1\'',
   'const NUXT_DEV_ARGS = [',
   '\'--port\'',
   '\'3000\'',
-  'await run(nuxiBinary, NUXT_DEV_ARGS, nuxtAppRoot, STACKBLITZ_NUXT_ENV)',
+  'await run(nuxiBinary, NUXT_DEV_ARGS, nuxtAppRoot)',
 ]
 
 const FORBIDDEN_BOOTSTRAP_SNIPPETS = [
@@ -50,6 +48,8 @@ const FORBIDDEN_BOOTSTRAP_SNIPPETS = [
   '--ignore-pnpmfile',
   'pnpmBinary',
   '\'--filter\', \'nuxt-app\', \'dev\'',
+  'STACKBLITZ_NUXT_ENV',
+  'FEATHERS_NITRO_STACKBLITZ',
 ]
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
@@ -129,12 +129,8 @@ if (!bootstrapContent.includes('typeCheck: true')) {
   violations.push('StackBlitz tooling-layer shim must preserve TypeScript type checking')
 }
 
-if (!nuxtConfigContent.includes('process.env.FEATHERS_NITRO_STACKBLITZ === \'1\' ? false : undefined')) {
-  violations.push('Nuxt playground must disable Vite HMR only for the StackBlitz bootstrap flag')
-}
-
-if (!nuxtConfigContent.includes('vite: {') || !nuxtConfigContent.includes('hmr:')) {
-  violations.push('Nuxt playground must keep the StackBlitz-specific Vite HMR guard')
+if (nuxtConfigContent.includes('FEATHERS_NITRO_STACKBLITZ') || nuxtConfigContent.includes('hmr:')) {
+  violations.push('Nuxt playground must not override Vite HMR; Nuxt 4.5+ shares HMR with the main dev-server listener')
 }
 
 for (const snippet of REQUIRED_BOOTSTRAP_SNIPPETS) {
@@ -173,6 +169,6 @@ else {
     `StackBlitz uses an isolated npm runtime derived from the pnpm ${EXPECTED_PNPM_VERSION} lockfile,`,
     'links the root and Nuxt playground to that runtime, links feathers-api locally,',
     'prepares the repository-root Nuxt tsconfig for Vite/Oxc discovery,',
-    'and launches Nuxt on port 3000 with separate Vite HMR disabled only in StackBlitz.',
+    'and launches Nuxt on port 3000 without overriding Nuxt 4.5+ shared-server HMR.',
   ].join(' '))
 }

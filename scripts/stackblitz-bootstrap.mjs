@@ -34,10 +34,6 @@ const ROOT_DEV_RUNTIME_PACKAGES = new Set([
 const NUXT_ESLINT_LAYER_NAME = '@gabortorma/nuxt-eslint-layer'
 const NUXT_ESLINT_LAYER_ROOT = join(runtimeModulesDirectory, '@gabortorma', 'nuxt-eslint-layer')
 
-const STACKBLITZ_NUXT_ENV = {
-  FEATHERS_NITRO_STACKBLITZ: '1',
-}
-
 const NUXT_DEV_ARGS = [
   'dev',
   '--host',
@@ -341,8 +337,8 @@ if (process.env.STACKBLITZ_BOOTSTRAP_DRY_RUN === '1') {
   console.log(formatCommand('npm', NPM_INSTALL_ARGS, runtimeRoot))
   console.log('[stackblitz] link root and nuxt-app node_modules to .stackblitz-runtime/node_modules')
   console.log('[stackblitz] link .stackblitz-runtime/node_modules/feathers-api to playground/feathers-api')
-  console.log(formatCommand(nuxiBinary, ['prepare'], projectRoot, STACKBLITZ_NUXT_ENV))
-  console.log(formatCommand(nuxiBinary, NUXT_DEV_ARGS, nuxtAppRoot, STACKBLITZ_NUXT_ENV))
+  console.log(formatCommand(nuxiBinary, ['prepare'], projectRoot))
+  console.log(formatCommand(nuxiBinary, NUXT_DEV_ARGS, nuxtAppRoot))
   process.exit(0)
 }
 
@@ -365,10 +361,10 @@ if (!(await pathExists(nuxiBinary))) {
 }
 
 console.log('[stackblitz] preparing repository-root Nuxt types for Vite/Oxc tsconfig discovery')
-await run(nuxiBinary, ['prepare'], projectRoot, STACKBLITZ_NUXT_ENV)
+await run(nuxiBinary, ['prepare'], projectRoot)
 if (!(await pathExists(rootNuxtTsconfigPath))) {
   throw new Error(`Expected repository-root Nuxt tsconfig at ${rootNuxtTsconfigPath}`)
 }
 
 console.log('[stackblitz] isolated runtime ready; starting Nuxt playground')
-await run(nuxiBinary, NUXT_DEV_ARGS, nuxtAppRoot, STACKBLITZ_NUXT_ENV)
+await run(nuxiBinary, NUXT_DEV_ARGS, nuxtAppRoot)

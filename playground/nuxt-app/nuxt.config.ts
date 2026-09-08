@@ -1,5 +1,3 @@
-import process from 'node:process'
-
 export default defineNuxtConfig({
   compatibilityDate: '2026-07-10',
 
@@ -18,12 +16,6 @@ export default defineNuxtConfig({
   },
 
   devtools: { enabled: true },
-
-  vite: {
-    server: {
-      hmr: process.env.FEATHERS_NITRO_STACKBLITZ === '1' ? false : undefined,
-    },
-  },
 
   runtimeConfig: {
     public: {

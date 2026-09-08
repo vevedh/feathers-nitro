@@ -19,6 +19,8 @@ All notable changes to this fork are documented in this file.
 
 ### Fixed
 
+- Removed the legacy StackBlitz-only `vite.server.hmr = false` override after the real Nuxt 4.5.2 / Vite 8.2.2 WebContainer preview rendered SSR but routed `/_nuxt/*` CSS/client requests into Vue Router; Nuxt 4.5.2 now owns shared-server HMR on the explicit port `3000`.
+- Removed the now-unused `FEATHERS_NITRO_STACKBLITZ` bootstrap environment flag and strengthened `check:stackblitz` to reject reintroduction of the old HMR-disable workaround; isolated npm runtime, root Nuxt prepare, dependency graph, lockfile and published runtime remain unchanged.
 - Prepared the repository-root Nuxt type scaffold inside the StackBlitz isolated bootstrap before launching the playground, closing the Vite 8/Oxc `TSCONFIG_ERROR` raised when WebContainer transformed Nuxt middleware while the root `tsconfig.json` still referenced a missing `.nuxt/tsconfig.json`.
 - Extended the StackBlitz contract gate to require that root `nuxi prepare` step and the generated root tsconfig assertion; package runtime, dependencies, lockfile and npm payload remain unchanged from the Windows-certified `0.6.0` candidate.
 

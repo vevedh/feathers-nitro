@@ -22,7 +22,7 @@ The certified Windows run produced a 39-file tarball containing only `dist/**`, 
 pnpm --filter nuxt-app dev
 ```
 
-Review `/`, `/adapters`, `/multi-instance`, authenticate with the seeded `test` / `12345` account, then validate `/messages` in two browser tabs so a created message is received as a realtime event. Repeat the preview in StackBlitz before tagging the stable release. The Nuxt 4.5.2 / Vite 8.2.2 WebContainer path must run the repository-root `nuxi prepare` from `scripts/stackblitz-bootstrap.mjs` and must not report a missing root `.nuxt/tsconfig.json` while transforming Nuxt middleware.
+Review `/`, `/adapters`, `/multi-instance`, authenticate with the seeded `test` / `12345` account, then validate `/messages` in two browser tabs so a created message is received as a realtime event. Repeat the preview in StackBlitz before tagging the stable release. The Nuxt 4.5.2 / Vite 8.2.2 WebContainer path must run the repository-root `nuxi prepare`, serve CSS and client modules under `/_nuxt/*`, keep the preview on port `3000`, and use Nuxt's shared-server HMR without the removed Patch 012 `hmr: false` override.
 
 ## 3. Commit and tag
 

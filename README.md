@@ -97,7 +97,7 @@ The generated `.stackblitz-runtime/` directory is gitignored and never belongs i
 
 `pnpm check:stackblitz` verifies that this isolated-runtime contract remains in place and rejects the older pnpm/npx/workspace-`.npmrc` workarounds.
 
-For the WebContainer preview, the bootstrap starts Nuxt explicitly on port `3000` and keeps the StackBlitz-only HMR disable that was validated with Patch 012. Nuxt 4.5.2 now prefers attaching Vite HMR to Nuxt's own dev-server listener, but the conservative WebContainer guard remains enabled until the upgraded stack is validated in StackBlitz. Local development and CI keep normal Vite HMR behavior.
+For the WebContainer preview, the bootstrap starts Nuxt explicitly on port `3000` and leaves Vite HMR under Nuxt's native control. Patch 020 removes the old Patch 012 StackBlitz-only `hmr: false` override: Nuxt 4.5.2 now attaches HMR to its own main dev-server listener, avoiding the historical separate-port `24678` preview problem while allowing `/_nuxt/*` client assets to stay on the Vite middleware path.
 
 ## Development
 
@@ -124,7 +124,7 @@ pnpm enforces the same 14-day maturity window when resolving new versions. Patch
 
 Review Nuxt, Nitro, H3, TypeScript, Vitest, Feathers, and other coordinated or major upgrades independently before regenerating the lockfile.
 
-Patch 015-r1 is the Windows-validated coordinated baseline: Nuxt `4.5.2`, Vite `8.2.2`, Vue `3.5.42`, `@nuxt/test-utils` `4.2.0`, Vitest `4.1.11`, Rolldown `1.2.4`, and Vue TSC `3.3.11`, while FeathersJS `5.0.49`, Nitro `2.13.4`, H3 `1.15.11`, direct/root TypeScript `5.9.3`, Node `22.20.0`, and pnpm `10.34.5` remain pinned. The checked-in lockfile has passed the complete Windows `pnpm verify` gate and subsequent installs use `--frozen-lockfile`. The upgraded StackBlitz graph still keeps the conservative WebContainer HMR guard until a real Nuxt 4.5.2 preview run is validated.
+Patch 015-r1 is the Windows-validated coordinated baseline: Nuxt `4.5.2`, Vite `8.2.2`, Vue `3.5.42`, `@nuxt/test-utils` `4.2.0`, Vitest `4.1.11`, Rolldown `1.2.4`, and Vue TSC `3.3.11`, while FeathersJS `5.0.49`, Nitro `2.13.4`, H3 `1.15.11`, direct/root TypeScript `5.9.3`, Node `22.20.0`, and pnpm `10.34.5` remain pinned. The checked-in lockfile has passed the complete Windows `pnpm verify` gate and subsequent installs use `--frozen-lockfile`. Patch 020 removes the old StackBlitz-only HMR disable after the real migrated preview proved Nuxt 4.5.2 could boot on port 3000 but `/_nuxt/*` client assets fell through to Vue Router under that legacy guard.
 
 ### Showcase smoke test
 
@@ -136,7 +136,7 @@ pnpm test:showcase
 
 This complements the lower-level Express/Koa/Socket.IO fixtures and ensures the public playground remains executable rather than documentation-only.
 
-Patch 018 records the complete Windows `pnpm release:certify` pass for `0.6.0`: all six built-showcase scenarios pass, the generated tarball is restricted to 39 publish-safe files, and `npm publish --dry-run` accepts the package as public with the `latest` tag. The first real Nuxt 4.5.2 / Vite 8.2.2 StackBlitz run then exposed a WebContainer-only Vite/Oxc tsconfig lookup failure because the root `.nuxt/tsconfig.json` had never been generated; Patch 019 adds an explicit repository-root `nuxi prepare` to the isolated bootstrap. Revalidate that live preview before the final npm publish.
+Patch 018 records the complete Windows `pnpm release:certify` pass for `0.6.0`: all six built-showcase scenarios pass, the generated tarball is restricted to 39 publish-safe files, and `npm publish --dry-run` accepts the package as public with the `latest` tag. Patch 019 then fixed the first real StackBlitz Vite/Oxc root-tsconfig failure. The next live run rendered SSR successfully but exposed the remaining legacy HMR boundary: `/_nuxt/*` client assets fell through to Vue Router while StackBlitz forced `hmr: false`. Patch 020 removes that obsolete override; revalidate the styled/realtime WebContainer preview before final npm publish.
 
 ## Publishing
 
