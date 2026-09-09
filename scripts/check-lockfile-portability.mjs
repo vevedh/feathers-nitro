@@ -44,16 +44,20 @@ for (const file of filesToCheck) {
 // pnpm security advisories published in 2026 made fail-open installs without an
 // integrity field a concrete supply-chain risk. Keep every external package
 // entry in the portable lockfile content-addressed.
+// Git may materialize text files with CRLF on Windows. Normalize line endings
+// in-memory so the portability gate validates the lockfile structure rather than
+// the checkout platform's newline convention.
+const normalizedLockfileContent = lockfileContent.replace(/\r\n?/gu, '\n')
 const packagesMarker = '\npackages:\n'
 const snapshotsMarker = '\nsnapshots:\n'
-const packagesStart = lockfileContent.indexOf(packagesMarker)
-const snapshotsStart = lockfileContent.indexOf(snapshotsMarker)
+const packagesStart = normalizedLockfileContent.indexOf(packagesMarker)
+const snapshotsStart = normalizedLockfileContent.indexOf(snapshotsMarker)
 
 if (packagesStart === -1 || snapshotsStart === -1 || snapshotsStart <= packagesStart) {
   violations.push('pnpm-lock.yaml: expected pnpm v9 packages/snapshots sections were not found')
 }
 else {
-  const packagesSection = lockfileContent.slice(packagesStart + packagesMarker.length, snapshotsStart)
+  const packagesSection = normalizedLockfileContent.slice(packagesStart + packagesMarker.length, snapshotsStart)
   const packageBlocks = packagesSection
     .split(/\n(?= {2}\S)/u)
     .map(block => block.trimEnd())
