@@ -98,7 +98,6 @@ describe('nuxt showcase playground', () => {
   const nitroE2EExternalPackages = new Set([
     '@feathersjs/adapter-commons',
     '@feathersjs/authentication',
-    '@feathersjs/authentication-client',
     '@feathersjs/authentication-local',
     '@feathersjs/configuration',
     '@feathersjs/errors',
