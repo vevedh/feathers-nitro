@@ -142,6 +142,10 @@ describe('nuxt showcase playground', () => {
         enabled: false,
       },
       nitro: {
+        externals: {
+          // Node ESM/Linux cannot execute authentication-client's extensionless internal imports when externalized.
+          inline: ['@feathersjs/authentication-client'],
+        },
         // E2E correctness does not depend on minification or gzip/brotli size
         // reporting. Keep production defaults untouched while avoiding work that
         // adds no integration coverage here.

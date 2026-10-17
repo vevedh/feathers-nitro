@@ -10,7 +10,6 @@ import type { NuxtConfig } from '@nuxt/schema'
 const nitroE2EExternalPackages = new Set([
   '@feathersjs/adapter-commons',
   '@feathersjs/authentication',
-  '@feathersjs/authentication-client',
   '@feathersjs/authentication-local',
   '@feathersjs/configuration',
   '@feathersjs/errors',
@@ -52,6 +51,10 @@ export const fastNuxtE2EConfig: NuxtConfig = {
     enabled: false,
   },
   nitro: {
+    externals: {
+      // Node ESM/Linux cannot execute authentication-client's extensionless internal imports when externalized.
+      inline: ['@feathersjs/authentication-client'],
+    },
     minify: false,
     logging: {
       compressedSizes: false,
