@@ -2,9 +2,9 @@
 
 ## Current state
 
-- Public stable: `0.6.0` (`latest`).
-- Patch 022 candidate: `0.6.1` targeting Nuxt `4.6.2` while keeping Nitro `2.13.4` / H3 `1.15.11`.
-- Do not publish `0.6.1` until its regenerated lockfile and complete Windows certification are green.
+- Public stable: `0.6.1` (`latest`), certified on Windows and Ubuntu with npm Trusted Publishing provenance.
+- Maintenance candidate: `0.6.2`, keeping the certified Nuxt `4.6.2` / Nitro `2.13.4` / H3 `1.15.11` baseline.
+- `0.6.2` does not change the dependency graph; the checked-in lockfile remains the certified source of truth.
 
 ## 1. Use the pinned toolchain
 
@@ -14,71 +14,63 @@ corepack prepare pnpm@10.34.5 --activate
 pnpm --version
 ```
 
-Expected development baseline for Patch 022: Node `22.22.3`, pnpm `10.34.5`.
+Expected release baseline: Node `22.22.3`, pnpm `10.34.5`.
 
-## 2. Refresh the coordinated lockfile once
-
-Patch 022 changes the Nuxt/Vite/Vue development matrix. From the repository root on Windows:
-
-```powershell
-./scripts/patch022-refresh-lockfile.ps1
-```
-
-Equivalent manual sequence:
-
-```powershell
-pnpm install --no-frozen-lockfile
-pnpm check:runtime
-pnpm check:nitro-api
-pnpm check:nuxt-stack
-pnpm check:portability
-pnpm verify
-```
-
-After that intentional migration, return to frozen installs:
+## 2. Install from the frozen lockfile
 
 ```powershell
 pnpm install --frozen-lockfile
 ```
 
-## 3. Certify the release candidate
+Do not regenerate `pnpm-lock.yaml` for `0.6.2`: Nuxt remains `4.6.2` and the coordinated dependency graph is unchanged.
+
+## 3. Certify the exact release tree
 
 ```powershell
+$env:FEATHERS_NITRO_TEST_CONCURRENCY = '4'
 pnpm release:certify
 ```
 
 The gate covers runtime policy, Nitro public API usage, package identity, lockfile portability, FeathersJS coordination, StackBlitz invariants, the Nuxt stack, strict TypeScript, lint, integration tests, the runnable Nuxt showcase, package creation, artifact audit, and npm publish dry-run.
 
-## 4. Review the live showcase
-
-```powershell
-pnpm --filter nuxt-app dev
-```
-
-Review `/`, `/adapters`, `/multi-instance`, authenticate with the seeded test account, then validate `/messages` in two tabs so a created message is received through Socket.IO. Repeat the preview in StackBlitz before tagging.
-
-## 5. Commit and tag only after certification
+## 4. Commit and push the release candidate
 
 ```powershell
 git add -A
-git commit -m "release: @vevedh/feathers-nitro v0.6.1"
-git tag -a v0.6.1 -m "@vevedh/feathers-nitro v0.6.1"
+git diff --cached --check
+git commit -m "release: @vevedh/feathers-nitro 0.6.2"
 git push origin main
-git push origin v0.6.1
 ```
 
-## 6. Publish
+Wait for the `ci` workflow on `main` to pass before creating the release tag.
+
+## 5. Tag the certified commit
 
 ```powershell
-npm login --registry=https://registry.npmjs.org/
-npm whoami --registry=https://registry.npmjs.org/
-./scripts/publish-direct.ps1
+git tag -a v0.6.2 -m "@vevedh/feathers-nitro v0.6.2"
+git push origin v0.6.2
 ```
 
-The helper derives the version from `package.json`, requires a clean `main`, requires the matching tag to point to `HEAD`, reruns release certification, rejects duplicate publication, and publishes with public access.
+The `Publish npm` workflow verifies that the package version and tag match the exact checkout before publishing.
+
+## 6. Trusted Publishing
+
+Publication is performed by `.github/workflows/publish.yml` through npm Trusted Publishing / GitHub Actions OIDC. No long-lived npm token is required for the publish step.
+
+The workflow:
+
+1. installs the frozen dependency graph;
+2. verifies that `v0.6.2` points to the checked-out commit;
+3. refuses duplicate versions;
+4. runs `pnpm release:certify`;
+5. publishes `@vevedh/feathers-nitro@0.6.2` with public access and provenance;
+6. waits for the exact version to become visible on npm without treating delayed `latest` propagation as a false publication failure.
 
 ## 7. Verify npm
 
 ```powershell
-npm view @vevedh/feathers-nitro@0.6.1 name version dist-tags.latest dist.tarball --registry=https://registry.npmjs.org/
+npm view @vevedh/feathers-nitro@0.6.2 name version dist.tarball --registry=https://registry.npmjs.org/
+npm view @vevedh/feathers-nitro dist-tags --registry=https://registry.npmjs.org/
 ```
+
+Expected result: version `0.6.2` exists and `latest` resolves to `0.6.2` once registry propagation is complete.

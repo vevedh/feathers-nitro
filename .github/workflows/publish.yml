@@ -93,14 +93,28 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="$(node -p "require('./package.json').version")"
-          for attempt in 1 2 3 4 5 6; do
-            PUBLISHED="$(npm view @vevedh/feathers-nitro version --registry=https://registry.npmjs.org/ 2>/dev/null || true)"
+          PACKAGE="@vevedh/feathers-nitro@${VERSION}"
+          FOUND=''
+
+          for attempt in $(seq 1 18); do
+            PUBLISHED="$(npm view "${PACKAGE}" version --registry=https://registry.npmjs.org/ 2>/dev/null || true)"
             if [ "${PUBLISHED}" = "${VERSION}" ]; then
-              echo "@vevedh/feathers-nitro@${VERSION} is published as latest"
-              exit 0
+              FOUND='1'
+              echo "${PACKAGE} is visible on npm (attempt ${attempt}/18)"
+              break
             fi
-            echo "Registry propagation attempt ${attempt}/6: latest=${PUBLISHED:-unavailable}"
+            echo "Registry propagation attempt ${attempt}/18: ${PACKAGE}=${PUBLISHED:-unavailable}"
             sleep 10
           done
-          echo "::error::npm registry did not expose expected latest version ${VERSION}"
-          exit 1
+
+          if [ -z "${FOUND}" ]; then
+            echo "::error::npm registry did not expose ${PACKAGE} after 180 seconds"
+            exit 1
+          fi
+
+          LATEST="$(npm view @vevedh/feathers-nitro version --registry=https://registry.npmjs.org/ 2>/dev/null || true)"
+          if [ "${LATEST}" = "${VERSION}" ]; then
+            echo "@vevedh/feathers-nitro@${VERSION} is published as latest"
+          else
+            echo "::warning::${PACKAGE} is published, but the latest dist-tag still resolves to ${LATEST:-unavailable}; registry propagation may still be in progress"
+          fi

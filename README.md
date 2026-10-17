@@ -154,7 +154,7 @@ pnpm verify
 pnpm publish --access public --registry=https://registry.npmjs.org/ --no-git-checks
 ```
 
-Before publication, authenticate with npm and follow [`PUBLISHING.md`](./PUBLISHING.md). Version `0.6.0` is the current public `latest`; Patch 022 prepares `0.6.1` and must not be published until the refreshed Nuxt 4.6.2 lockfile passes the complete Windows release gate. `pnpm release:certify` runs the complete verification gate followed by an npm publish dry-run. On Windows, `./scripts/publish-direct.ps1` reads the current package version, validates the exact tree, requires the matching `v<version>` tag to point to `HEAD`, rejects duplicate publication, and publishes the scoped package with public access.
+Version `0.6.1` is the current public stable release. Version `0.6.2` is a maintenance release on the same certified Nuxt `4.6.2` / Nitro `2.13.4` / H3 `1.15.11` baseline. `pnpm release:certify` runs the complete verification gate followed by an npm publish dry-run, and the real publication is performed through npm Trusted Publishing in GitHub Actions. See [`PUBLISHING.md`](./PUBLISHING.md) for the exact tag and release procedure.
 
 ## Attribution
 

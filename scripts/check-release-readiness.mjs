@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
 const projectRoot = resolve(scriptDirectory, '..')
-const expectedVersion = '0.6.1'
+const expectedVersion = '0.6.2'
 const expectedPublishDryRun = 'npm publish --dry-run --access public --registry=https://registry.npmjs.org/'
 const showcasePageFiles = [
   'playground/nuxt-app/app/pages/index.vue',

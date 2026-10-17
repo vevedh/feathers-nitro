@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param(
   [Parameter()]
   [string]$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path,
@@ -13,7 +13,7 @@ $ErrorActionPreference = 'Stop'
 $RecommendedNode = 'v22.22.3'
 $SupportedNodeRange = '^22.22.3 || ^24.15.0 || >=26.0.0'
 $ExpectedPnpm = '10.34.5'
-$ExpectedPackageVersion = '0.6.1'
+$ExpectedPackageVersion = '0.6.2'
 $PermanentMinimumReleaseAge = 20160
 
 function Invoke-NativeStrict {
@@ -184,7 +184,7 @@ try {
     Invoke-NativeStrict -FilePath 'pnpm' -ArgumentList @('verify')
   }
   else {
-    Write-Warning 'Full pnpm verify was skipped. Do not tag or publish 0.6.1 until pnpm verify and pnpm release:certify pass.'
+    Write-Warning 'Full pnpm verify was skipped. Do not tag or publish 0.6.2 until pnpm verify and pnpm release:certify pass.'
   }
 
   Write-Host '[Patch022] Lockfile refresh completed under controlled migration mode.'
