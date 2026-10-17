@@ -2,11 +2,12 @@
 import type { Message } from 'feathers-api/src/client'
 
 const { api } = useFeathers()
+const auth = useAuthStore(usePinia())
 const service = api.service('messages')
 const messages = ref<Message[]>([])
 const events = ref<string[]>([])
 const newMessage = ref('')
-const user = computed(() => useAuthStore().user)
+const user = computed(() => auth.user)
 
 function normalizeMessages(result: Message[] | { data: Message[] }) {
   return Array.isArray(result) ? result : result.data

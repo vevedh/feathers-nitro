@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const auth = useAuthStore()
+const auth = useAuthStore(usePinia())
 
 async function logout() {
   await auth.logout()

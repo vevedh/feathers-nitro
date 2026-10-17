@@ -7,10 +7,12 @@ import { setup, url } from '@nuxt/test-utils/e2e'
 import ioc from 'socket.io-client'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createClient } from './fixtures/socket.io/feathers-api/src/client'
+import { fastNuxtE2EConfig } from './utils/fast-nuxt-e2e'
 
 describe('socket.io-path', async () => {
   await setup({
     rootDir: fileURLToPath(new URL('./fixtures/socket.io-path/nuxt-app', import.meta.url)),
+    nuxtConfig: fastNuxtE2EConfig,
   })
 
   let feathersClient: ClientApplication | undefined

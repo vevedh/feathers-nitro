@@ -1,6 +1,6 @@
 import type { Application as FeathersExpressApplication } from '@feathersjs/express'
 import type { NitroApp, NitroAppPlugin } from 'nitropack'
-import { defineNitroPlugin } from 'nitropack/dist/runtime/plugin'
+import { defineNitroPlugin } from 'nitropack/runtime/plugin'
 import { expressErrorHandler } from '../handlers/express'
 import { createExpressRouter } from '../routers'
 import { setup } from '../setup'

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import process from 'node:process'
 
 const expectedEngine = '^22.19.0 || ^24.11.0 || >=26.0.0'
-const recommendedNode = '22.20.0'
+const recommendedNode = '22.22.3'
 const manifests = [
   'package.json',
   'playground/feathers-api/package.json',
@@ -17,19 +17,19 @@ function parseVersion(version) {
   return match.slice(1).map(Number)
 }
 
-function isSupported([major, minor]) {
+function isSupportedDevelopmentRuntime([major, minor, patch]) {
   if (major === 22)
-    return minor >= 19
+    return minor > 22 || (minor === 22 && patch >= 3)
   if (major === 24)
-    return minor >= 11
+    return minor >= 15
   return major >= 26
 }
 
 const failures = []
 const currentVersion = parseVersion(process.version)
-if (!isSupported(currentVersion)) {
+if (!isSupportedDevelopmentRuntime(currentVersion)) {
   failures.push(
-    `Node.js ${process.version} does not satisfy the Patch 014 runtime floor ${expectedEngine}.`,
+    `Node.js ${process.version} is below the Patch 022 Nuxt 4.6 development floor (^22.22.3 || ^24.15.0 || >=26.0.0).`,
   )
 }
 
@@ -60,5 +60,5 @@ if (failures.length) {
 }
 
 console.log(
-  `Node runtime policy is coherent: ${expectedEngine}; CI and local version files pin ${recommendedNode}.`,
+  `Node runtime policy is coherent: package engines remain ${expectedEngine}; Patch 022 CI/local tooling pins ${recommendedNode}.`,
 )

@@ -2,10 +2,12 @@ import type { MessageData } from './fixtures/express/feathers-api/src/services/m
 import { fileURLToPath } from 'node:url'
 import { $fetch, setup } from '@nuxt/test-utils/e2e'
 import { assert, describe, expect, it } from 'vitest'
+import { fastNuxtE2EConfig } from './utils/fast-nuxt-e2e'
 
 describe('express-path', async () => {
   await setup({
     rootDir: fileURLToPath(new URL('./fixtures/express-path/nuxt-app', import.meta.url)),
+    nuxtConfig: fastNuxtE2EConfig,
   })
 
   it('renders the index page', async () => {

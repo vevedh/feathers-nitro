@@ -1,7 +1,7 @@
 import type { Application as FeathersApplication } from '@feathersjs/feathers'
 import type { NitroApp, NitroAppPlugin } from 'nitropack'
 import {} from '@feathersjs/socketio'
-import { defineNitroPlugin } from 'nitropack/dist/runtime/plugin'
+import { defineNitroPlugin } from 'nitropack/runtime/plugin'
 import { createSocketIoRouter } from '../routers'
 import { setup } from '../setup'
 

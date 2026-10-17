@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const authStore = useAuthStore()
+const authStore = useAuthStore(usePinia())
 const credentials = reactive({ userId: 'test', password: '12345' })
 const errorMessage = ref('')
 
@@ -36,9 +36,9 @@ async function login() {
         authentication, Pinia and multi-instance integration.
       </p>
       <div class="badges">
-        <span class="badge">Nuxt 4.5.2</span>
-        <span class="badge">Vite 8.2.2</span>
-        <span class="badge">Vue 3.5.42</span>
+        <span class="badge">Nuxt 4.6.2</span>
+        <span class="badge">Vite 8.3.4</span>
+        <span class="badge">Vue 3.5.44</span>
         <span class="badge">FeathersJS 5.0.49</span>
       </div>
     </section>

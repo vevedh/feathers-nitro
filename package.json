@@ -1,7 +1,7 @@
 {
   "name": "@vevedh/feathers-nitro",
   "type": "module",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "packageManager": "pnpm@10.34.5",
   "description": "FeathersJS integration for Nuxt/Nitro with Express, Koa, Socket.IO, and multi-instance support",
   "author": "vevedh",
@@ -62,11 +62,12 @@
     "dev:nuxt": "pnpm --filter nuxt-app dev",
     "stackblitz:bootstrap": "node scripts/stackblitz-bootstrap.mjs",
     "dev:api": "pnpm --filter feathers-api dev",
-    "prerelease": "pnpm check:runtime && pnpm check:identity && pnpm check:portability && pnpm check:feathers-suite && pnpm check:stackblitz && pnpm check:nuxt-stack && pnpm check:release && pnpm test:types && pnpm lint && pnpm test:all",
+    "prerelease": "pnpm check:runtime && pnpm check:nitro-api && pnpm check:identity && pnpm check:portability && pnpm check:feathers-suite && pnpm check:stackblitz && pnpm check:nuxt-stack && pnpm check:release && pnpm test:types && pnpm lint && pnpm test:all",
     "release": "release-it",
     "lint": "pnpm lint:root && pnpm lint:workspaces",
     "lint:fix": "pnpm lint:root:fix && pnpm lint:workspaces:fix",
     "test": "node scripts/run-vitest-suite.mjs",
+    "test:fast": "pnpm --dir playground/feathers-api test && vitest run test/manager.test.ts test/setup-integration.test.ts --maxWorkers=2 --no-file-parallelism",
     "test:all": "pnpm --dir playground/feathers-api test && pnpm test",
     "test:watch": "vitest watch test/*",
     "test:types": "vue-tsc --noEmit && pnpm --dir playground/feathers-api exec tsc --noEmit && pnpm --dir playground/nuxt-app exec vue-tsc --noEmit",
@@ -79,7 +80,8 @@
     "deps:update:safe": "taze minor -w --maturity-period 14",
     "deps:update:safe:recursive": "taze minor -r -w --maturity-period 14",
     "deps:update:major:review": "taze major -r",
-    "verify": "pnpm check:runtime && pnpm check:identity && pnpm check:portability && pnpm check:feathers-suite && pnpm check:test-runner && pnpm check:stackblitz && pnpm check:nuxt-stack && pnpm check:release && pnpm test:types && pnpm lint && pnpm test:all && pnpm pack:check && pnpm check:artifact",
+    "verify:fast": "pnpm check:runtime && pnpm check:nitro-api && pnpm check:identity && pnpm check:portability && pnpm check:feathers-suite && pnpm check:test-runner && pnpm check:nuxt-stack && pnpm test:types && pnpm lint && pnpm test:fast",
+    "verify": "pnpm check:runtime && pnpm check:nitro-api && pnpm check:identity && pnpm check:portability && pnpm check:feathers-suite && pnpm check:test-runner && pnpm check:stackblitz && pnpm check:nuxt-stack && pnpm check:release && pnpm test:types && pnpm lint && pnpm test:all && pnpm pack:check && pnpm check:artifact",
     "lint:workspaces": "pnpm --dir playground/feathers-api exec eslint . && pnpm --dir playground/nuxt-app prepare && pnpm --dir playground/nuxt-app exec eslint .",
     "lint:workspaces:fix": "pnpm --dir playground/feathers-api exec eslint . --fix && pnpm --dir playground/nuxt-app prepare && pnpm --dir playground/nuxt-app exec eslint . --fix",
     "pack:check": "pnpm pack --pack-destination .pack-check",
@@ -96,7 +98,8 @@
     "test:showcase": "vitest run test/playground-showcase.test.ts --maxWorkers=1 --no-file-parallelism",
     "check:artifact": "node scripts/check-packed-artifact.mjs",
     "release:certify": "pnpm verify && pnpm publish:dry-run",
-    "publish:dry-run": "npm publish --dry-run --access public --registry=https://registry.npmjs.org/"
+    "publish:dry-run": "npm publish --dry-run --access public --registry=https://registry.npmjs.org/",
+    "check:nitro-api": "node scripts/check-nitro-public-api.mjs"
   },
   "dependencies": {
     "@feathersjs/errors": "^5.0.49",
@@ -112,22 +115,22 @@
   "devDependencies": {
     "@gabortorma/antfu-eslint-config": "3.2.0",
     "@gabortorma/nuxt-eslint-layer": "1.0.0",
-    "@nuxt/schema": "4.5.2",
-    "@nuxt/test-utils": "4.2.0",
+    "@nuxt/schema": "4.6.2",
+    "@nuxt/test-utils": "4.3.3",
     "@types/koa": "^3.0.3",
-    "@types/node": "^22.20.0",
+    "@types/node": "22.20.4",
     "eslint": "9.39.5",
     "nuxi": "3.37.0",
-    "nuxt": "4.5.2",
+    "nuxt": "4.6.2",
     "release-it": "20.2.0",
-    "rolldown": "1.2.4",
+    "rolldown": "1.2.14",
     "taze": "19.14.1",
     "typescript": "5.9.3",
     "unbuild": "3.6.1",
-    "vite": "8.2.2",
+    "vite": "8.3.4",
     "vitest": "4.1.11",
-    "vue": "3.5.42",
-    "vue-tsc": "3.3.11"
+    "vue": "3.5.44",
+    "vue-tsc": "3.3.13"
   },
   "pnpm": {
     "updateConfig": {
@@ -137,9 +140,9 @@
       ]
     },
     "overrides": {
-      "rolldown": "1.2.4",
-      "vite": "8.2.2",
-      "vue": "3.5.42"
+      "rolldown": "1.2.14",
+      "vite": "8.3.4",
+      "vue": "3.5.44"
     }
   },
   "contributors": [

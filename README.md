@@ -11,9 +11,15 @@ Nitro adapter plugin for FeathersJS APIs. It integrates Feathers applications wi
 
 ## Requirements
 
-- Node.js `^22.19.0`, `^24.11.0`, or `>=26.0.0` (Node `22.20.0` is the recommended pinned development baseline)
-- Nuxt 4 / Nitro 2
+- Node.js `^22.19.0`, `^24.11.0`, or `>=26.0.0` (Node `22.22.3` is the recommended pinned development baseline)
+- Nuxt 4.6.x / Nitro 2.13.4 (Nitro 3 remains a separate experimental migration line)
 - FeathersJS `^5.0.49`
+
+### Compatibility policy
+
+`0.6.x` remains the stable Nitro 2 / H3 1 line. Patch 022 moves the Nuxt integration test matrix to Nuxt `4.6.2` while keeping Nitro `2.13.4` and H3 `1.15.11` pinned. The package intentionally uses Nitro 2 public subpath exports only; Nitro 3 / H3 2 support will be developed on the `0.7.x` line rather than silently changing the `0.6.x` ABI.
+
+Nuxt 4.6 introduces `nuxt/server` as a server-runtime facade for Nuxt application and module code. This package remains usable as a Nitro integration outside Nuxt, so the core runtime does not depend on `nuxt/server`; Nuxt-specific portability work will stay isolated from the generic Nitro adapters.
 
 ## Install
 
@@ -97,7 +103,7 @@ The generated `.stackblitz-runtime/` directory is gitignored and never belongs i
 
 `pnpm check:stackblitz` verifies that this isolated-runtime contract remains in place and rejects the older pnpm/npx/workspace-`.npmrc` workarounds.
 
-For the WebContainer preview, the bootstrap starts Nuxt explicitly on port `3000` and leaves Vite HMR under Nuxt's native control. Patch 020 removes the old Patch 012 StackBlitz-only `hmr: false` override: Nuxt 4.5.2 now attaches HMR to its own main dev-server listener, avoiding the historical separate-port `24678` preview problem while allowing `/_nuxt/*` client assets to stay on the Vite middleware path.
+For the WebContainer preview, the bootstrap starts Nuxt explicitly on port `3000` and leaves Vite HMR under Nuxt's native control. Patch 020 removes the old Patch 012 StackBlitz-only `hmr: false` override: Nuxt 4.6.2 attaches HMR to its own main dev-server listener, avoiding the historical separate-port `24678` preview problem while allowing `/_nuxt/*` client assets to stay on the Vite middleware path.
 
 ## Development
 
@@ -124,7 +130,7 @@ pnpm enforces the same 14-day maturity window when resolving new versions. Patch
 
 Review Nuxt, Nitro, H3, TypeScript, Vitest, Feathers, and other coordinated or major upgrades independently before regenerating the lockfile.
 
-Patch 015-r1 is the Windows-validated coordinated baseline: Nuxt `4.5.2`, Vite `8.2.2`, Vue `3.5.42`, `@nuxt/test-utils` `4.2.0`, Vitest `4.1.11`, Rolldown `1.2.4`, and Vue TSC `3.3.11`, while FeathersJS `5.0.49`, Nitro `2.13.4`, H3 `1.15.11`, direct/root TypeScript `5.9.3`, Node `22.20.0`, and pnpm `10.34.5` remain pinned. The checked-in lockfile has passed the complete Windows `pnpm verify` gate and subsequent installs use `--frozen-lockfile`. Patch 020 removes the old StackBlitz-only HMR disable after the real migrated preview proved Nuxt 4.5.2 could boot on port 3000 but `/_nuxt/*` client assets fell through to Vue Router under that legacy guard.
+Patch 022 targets the next Windows certification baseline: Nuxt `4.6.2`, Vite `8.3.4`, Vue `3.5.44`, `@nuxt/test-utils` `4.3.3`, Vitest `4.1.11`, Rolldown `1.2.14`, and Vue TSC `3.3.13`; FeathersJS `5.0.49`, Nitro `2.13.4`, H3 `1.15.11`, direct/root TypeScript `5.9.3`, and pnpm `10.34.5` remain deliberately stable. Node `22.22.3` is the pinned development/CI baseline required by the current Nuxt 4.6 train, while the published package engine range remains backward-compatible with the established `0.6.x` runtime contract. After changing this dependency train, regenerate `pnpm-lock.yaml` once on the pinned Windows toolchain and then return to frozen installs. The helper `./scripts/patch022-refresh-lockfile.ps1` enforces Node `22.22.3` / pnpm `10.34.5`, performs the one-time non-frozen install, runs the focused migration gates, and executes `pnpm verify` by default.
 
 ### Showcase smoke test
 
@@ -148,7 +154,7 @@ pnpm verify
 pnpm publish --access public --registry=https://registry.npmjs.org/ --no-git-checks
 ```
 
-Before publication, authenticate with npm and follow [`PUBLISHING.md`](./PUBLISHING.md). Patch 017 added the release-certification automation, and Patch 018 records its complete Windows pass for version `0.6.0` without changing the runtime implementation. `pnpm release:certify` runs the complete verification gate followed by an npm publish dry-run. On Windows, `./scripts/publish-direct.ps1` reads the current package version, validates the exact tree, requires `v0.6.0` to point to `HEAD`, rejects duplicate publication, and publishes the scoped package with public access.
+Before publication, authenticate with npm and follow [`PUBLISHING.md`](./PUBLISHING.md). Version `0.6.0` is the current public `latest`; Patch 022 prepares `0.6.1` and must not be published until the refreshed Nuxt 4.6.2 lockfile passes the complete Windows release gate. `pnpm release:certify` runs the complete verification gate followed by an npm publish dry-run. On Windows, `./scripts/publish-direct.ps1` reads the current package version, validates the exact tree, requires the matching `v<version>` tag to point to `HEAD`, rejects duplicate publication, and publishes the scoped package with public access.
 
 ## Attribution
 

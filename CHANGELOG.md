@@ -1,6 +1,19 @@
 # Changelog
 
-## 0.6.0 - release candidate (Windows certified)
+## [0.6.1] - Unreleased
+
+### Changed
+
+- Prepare the Nuxt integration matrix for Nuxt `4.6.2`, Vite `8.3.4`, Vue `3.5.44`, `@nuxt/test-utils` `4.3.3`, Rolldown `1.2.14`, and Vue TSC `3.3.13` while retaining Vitest `4.1.11`, TypeScript `5.9.3`, FeathersJS `5.0.49`, Nitro `2.13.4`, and H3 `1.15.11`.
+- Pin local development and CI to Node `22.22.3` for the current Nuxt 4.6 toolchain without tightening the published `0.6.x` package engine range.
+- Replace the internal `nitropack/dist/runtime/plugin` import with the exported `nitropack/runtime/plugin` subpath for all adapter plugin factories.
+- Add a `check:nitro-api` release gate that rejects future imports from Nitro `dist/**` internals and records the stable Nitro 2 / H3 1 boundary before the separate `0.7.x` Nitro 3 migration.
+
+### Migration
+
+- Regenerate `pnpm-lock.yaml` once on the pinned Windows toolchain with `pnpm install --no-frozen-lockfile`, then run the full `pnpm verify` / `pnpm release:certify` chain before tagging `v0.6.1`.
+
+## [0.6.0] - 2026-09-10
 
 - Certify the Nuxt 4.5.2 / Vite 8.2.2 / Vue 3.5.42 migration with the frozen Windows lockfile.
 - Upgrade the playground from a test UI to a structured showcase for Express, Koa, REST/SSR, Socket.IO, authentication, Pinia and multi-instance usage.

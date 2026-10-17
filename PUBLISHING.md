@@ -1,40 +1,73 @@
 # Publishing `@vevedh/feathers-nitro`
 
-## Stable 0.6.0 release
+## Current state
 
-Patch 018 records `0.6.0` as Windows release-certified. `pnpm release:certify` has passed end to end on Node `22.20.0` with pnpm `10.34.5`, including the six built-showcase smoke scenarios, strict tarball audit and npm public/latest dry-run. Publication is still allowed only after the local visual playground review and a real StackBlitz/WebContainer preview are green.
+- Public stable: `0.6.0` (`latest`).
+- Patch 022 candidate: `0.6.1` targeting Nuxt `4.6.2` while keeping Nitro `2.13.4` / H3 `1.15.11`.
+- Do not publish `0.6.1` until its regenerated lockfile and complete Windows certification are green.
 
-## 1. Validate the exact release tree
+## 1. Use the pinned toolchain
 
 ```powershell
+node --version
 corepack prepare pnpm@10.34.5 --activate
+pnpm --version
+```
+
+Expected development baseline for Patch 022: Node `22.22.3`, pnpm `10.34.5`.
+
+## 2. Refresh the coordinated lockfile once
+
+Patch 022 changes the Nuxt/Vite/Vue development matrix. From the repository root on Windows:
+
+```powershell
+./scripts/patch022-refresh-lockfile.ps1
+```
+
+Equivalent manual sequence:
+
+```powershell
+pnpm install --no-frozen-lockfile
+pnpm check:runtime
+pnpm check:nitro-api
+pnpm check:nuxt-stack
+pnpm check:portability
+pnpm verify
+```
+
+After that intentional migration, return to frozen installs:
+
+```powershell
 pnpm install --frozen-lockfile
+```
+
+## 3. Certify the release candidate
+
+```powershell
 pnpm release:certify
 ```
 
-`pnpm release:certify` runs `pnpm verify` and then `npm publish --dry-run`. The verification chain includes runtime, identity, dependency, Nuxt stack, release-readiness, type, lint, lower-level integration tests, the real Nuxt showcase smoke suite, `pnpm pack`, and a strict tarball-content audit.
+The gate covers runtime policy, Nitro public API usage, package identity, lockfile portability, FeathersJS coordination, StackBlitz invariants, the Nuxt stack, strict TypeScript, lint, integration tests, the runnable Nuxt showcase, package creation, artifact audit, and npm publish dry-run.
 
-The certified Windows run produced a 39-file tarball containing only `dist/**`, `README.md`, `LICENSE`, and `package.json`; npm accepted the dry-run for `@vevedh/feathers-nitro@0.6.0` with public access and the `latest` tag. The `[DEP0155]` messages seen in Nuxt/Feathers Koa test processes are upstream/transitive Node deprecation warnings and are not suppressed by this project.
-
-## 2. Review the live showcase
+## 4. Review the live showcase
 
 ```powershell
 pnpm --filter nuxt-app dev
 ```
 
-Review `/`, `/adapters`, `/multi-instance`, authenticate with the seeded `test` / `12345` account, then validate `/messages` in two browser tabs so a created message is received as a realtime event. Repeat the preview in StackBlitz before tagging the stable release. The Nuxt 4.5.2 / Vite 8.2.2 WebContainer path must run the repository-root `nuxi prepare`, serve CSS and client modules under `/_nuxt/*`, keep the preview on port `3000`, and use Nuxt's shared-server HMR without the removed Patch 012 `hmr: false` override.
+Review `/`, `/adapters`, `/multi-instance`, authenticate with the seeded test account, then validate `/messages` in two tabs so a created message is received through Socket.IO. Repeat the preview in StackBlitz before tagging.
 
-## 3. Commit and tag
+## 5. Commit and tag only after certification
 
 ```powershell
 git add -A
-git commit -m "release: @vevedh/feathers-nitro v0.6.0"
-git tag -a v0.6.0 -m "@vevedh/feathers-nitro v0.6.0"
+git commit -m "release: @vevedh/feathers-nitro v0.6.1"
+git tag -a v0.6.1 -m "@vevedh/feathers-nitro v0.6.1"
 git push origin main
-git push origin v0.6.0
+git push origin v0.6.1
 ```
 
-## 4. Authenticate and publish
+## 6. Publish
 
 ```powershell
 npm login --registry=https://registry.npmjs.org/
@@ -42,10 +75,10 @@ npm whoami --registry=https://registry.npmjs.org/
 ./scripts/publish-direct.ps1
 ```
 
-The helper reads the version directly from `package.json`, reruns `pnpm release:certify`, requires the Git tag to point to the current `HEAD`, rejects an already-published version, publishes with public access and confirms the `latest` dist-tag.
+The helper derives the version from `package.json`, requires a clean `main`, requires the matching tag to point to `HEAD`, reruns release certification, rejects duplicate publication, and publishes with public access.
 
-## 5. Verify npm
+## 7. Verify npm
 
 ```powershell
-npm view @vevedh/feathers-nitro@0.6.0 name version dist-tags.latest dist.tarball --registry=https://registry.npmjs.org/
+npm view @vevedh/feathers-nitro@0.6.1 name version dist-tags.latest dist.tarball --registry=https://registry.npmjs.org/
 ```

@@ -1,5 +1,5 @@
 export default defineNuxtRouteMiddleware(async (to, _from) => {
-  const auth = useAuthStore()
+  const auth = useAuthStore(usePinia())
 
   await auth.getPromise()
 

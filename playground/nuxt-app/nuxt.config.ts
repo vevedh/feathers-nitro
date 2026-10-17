@@ -17,6 +17,14 @@ export default defineNuxtConfig({
 
   devtools: { enabled: true },
 
+  vite: {
+    resolve: {
+      // This is a pnpm workspace showcase. Keep Vue/Pinia module identity unique
+      // across the application and @pinia/nuxt runtime during SSR.
+      dedupe: ['pinia', 'vue'],
+    },
+  },
+
   runtimeConfig: {
     public: {
       feathersBaseUrl: '',

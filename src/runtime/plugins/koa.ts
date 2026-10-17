@@ -1,6 +1,6 @@
 import type { Application as FeathersKoaApplication } from '@feathersjs/koa'
 import type { NitroApp, NitroAppPlugin } from 'nitropack'
-import { defineNitroPlugin } from 'nitropack/dist/runtime/plugin'
+import { defineNitroPlugin } from 'nitropack/runtime/plugin'
 import { koaErrorHandler } from '../handlers/koa'
 import { createKoaRouter } from '../routers'
 import { setup } from '../setup'

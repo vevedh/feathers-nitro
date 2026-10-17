@@ -23,7 +23,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.20.0
+          node-version: 22.22.3
 
       - name: Enable pinned pnpm
         run: |
@@ -36,6 +36,9 @@ jobs:
 
       - name: Validate Node runtime policy
         run: pnpm check:runtime
+
+      - name: Validate Nitro public API boundary
+        run: pnpm check:nitro-api
 
       - name: Validate package identity
         run: pnpm check:identity

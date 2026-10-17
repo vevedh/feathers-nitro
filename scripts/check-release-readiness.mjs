@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
 const projectRoot = resolve(scriptDirectory, '..')
-const expectedVersion = '0.6.0'
+const expectedVersion = '0.6.1'
 const expectedPublishDryRun = 'npm publish --dry-run --access public --registry=https://registry.npmjs.org/'
 const showcasePageFiles = [
   'playground/nuxt-app/app/pages/index.vue',
@@ -50,6 +50,9 @@ if (packageJson.publishConfig?.access !== 'public')
 
 if (JSON.stringify(packageJson.files) !== JSON.stringify(['dist']))
   errors.push('npm files whitelist must contain only dist')
+
+if (!packageJson.scripts?.verify?.includes('check:nitro-api'))
+  errors.push('verify must execute check:nitro-api')
 
 if (!packageJson.scripts?.verify?.includes('check:release'))
   errors.push('verify must execute check:release')

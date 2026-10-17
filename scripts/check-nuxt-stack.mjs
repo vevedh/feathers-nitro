@@ -4,14 +4,15 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
 const EXPECTED = {
-  nuxt: '4.5.2',
-  rolldown: '1.2.4',
-  schema: '4.5.2',
-  testUtils: '4.2.0',
-  vite: '8.2.2',
+  nodeTypes: '22.20.4',
+  nuxt: '4.6.2',
+  rolldown: '1.2.14',
+  schema: '4.6.2',
+  testUtils: '4.3.3',
+  vite: '8.3.4',
   vitest: '4.1.11',
-  vue: '3.5.42',
-  vueTsc: '3.3.11',
+  vue: '3.5.44',
+  vueTsc: '3.3.13',
 }
 
 const FROZEN_RUNTIME = {
@@ -19,6 +20,94 @@ const FROZEN_RUNTIME = {
   h3: '1.15.11',
   nitropack: '2.13.4',
 }
+
+const REQUIRED_MATURITY_EXCLUDES = [
+  'nuxt@4.6.2',
+  '@nuxt/schema@4.6.2',
+  '@nuxt/kit@4.6.2',
+  '@nuxt/nitro-server@4.6.2',
+  '@nuxt/vite-builder@4.6.2',
+  '@nuxt/vite-server@4.6.2',
+  '@nuxt/test-utils@4.3.3',
+  'rolldown@1.2.14',
+  'vue-tsc@3.3.13',
+  'my-bad@0.2.11',
+  'clickable-path@0.1.1',
+  'package-manager-detector@1.9.0',
+  'unhead@3.4.3',
+  '@unhead/vue@3.4.3',
+  'devalue@6.0.3',
+  'exsolve@1.1.3',
+  '@nuxt/cli@4.0.1',
+  '@nuxt/devtools@3.4.3',
+  '@nuxt/devtools-kit@3.4.3',
+  '@nuxt/devtools-wizard@3.4.3',
+  'hookable@6.1.2',
+  'ignore@7.0.12',
+  'std-env@4.3.0',
+  'vue-router@5.4.0',
+  'undici@8.12.1',
+  'vue-component-type-helpers@3.3.13',
+  'srvx@1.0.5',
+  '@rolldown/binding-android-arm-eabi@1.2.14',
+  '@rolldown/binding-android-arm64@1.2.14',
+  '@rolldown/binding-darwin-arm64@1.2.14',
+  '@rolldown/binding-darwin-universal@1.2.14',
+  '@rolldown/binding-darwin-x64@1.2.14',
+  '@rolldown/binding-freebsd-arm64@1.2.14',
+  '@rolldown/binding-freebsd-x64@1.2.14',
+  '@rolldown/binding-linux-arm-gnueabihf@1.2.14',
+  '@rolldown/binding-linux-arm-musleabihf@1.2.14',
+  '@rolldown/binding-linux-arm64-gnu@1.2.14',
+  '@rolldown/binding-linux-arm64-musl@1.2.14',
+  '@rolldown/binding-linux-loong64-gnu@1.2.14',
+  '@rolldown/binding-linux-loong64-musl@1.2.14',
+  '@rolldown/binding-linux-ppc64-gnu@1.2.14',
+  '@rolldown/binding-linux-riscv64-gnu@1.2.14',
+  '@rolldown/binding-linux-riscv64-musl@1.2.14',
+  '@rolldown/binding-linux-s390x-gnu@1.2.14',
+  '@rolldown/binding-linux-x64-gnu@1.2.14',
+  '@rolldown/binding-linux-x64-musl@1.2.14',
+  '@rolldown/binding-openharmony-arm@1.2.14',
+  '@rolldown/binding-openharmony-arm64@1.2.14',
+  '@rolldown/binding-openharmony-x64@1.2.14',
+  '@rolldown/binding-wasm32-wasi@1.2.14',
+  '@rolldown/binding-win32-arm64-msvc@1.2.14',
+  '@rolldown/binding-win32-ia32-msvc@1.2.14',
+  '@rolldown/binding-win32-x64-gnu@1.2.14',
+  '@rolldown/binding-win32-x64-msvc@1.2.14',
+  '@unhead/bundler@3.4.3',
+  'oxc-parser@0.154.0',
+  '@oxc-project/types@0.154.0',
+  '@oxc-parser/binding-android-arm-eabi@0.154.0',
+  '@oxc-parser/binding-android-arm64@0.154.0',
+  '@oxc-parser/binding-darwin-arm64@0.154.0',
+  '@oxc-parser/binding-darwin-universal@0.154.0',
+  '@oxc-parser/binding-darwin-x64@0.154.0',
+  '@oxc-parser/binding-freebsd-arm64@0.154.0',
+  '@oxc-parser/binding-freebsd-x64@0.154.0',
+  '@oxc-parser/binding-linux-arm-gnueabihf@0.154.0',
+  '@oxc-parser/binding-linux-arm-musleabihf@0.154.0',
+  '@oxc-parser/binding-linux-arm64-gnu@0.154.0',
+  '@oxc-parser/binding-linux-arm64-musl@0.154.0',
+  '@oxc-parser/binding-linux-loong64-gnu@0.154.0',
+  '@oxc-parser/binding-linux-loong64-musl@0.154.0',
+  '@oxc-parser/binding-linux-ppc64-gnu@0.154.0',
+  '@oxc-parser/binding-linux-riscv64-gnu@0.154.0',
+  '@oxc-parser/binding-linux-riscv64-musl@0.154.0',
+  '@oxc-parser/binding-linux-s390x-gnu@0.154.0',
+  '@oxc-parser/binding-linux-x64-gnu@0.154.0',
+  '@oxc-parser/binding-linux-x64-musl@0.154.0',
+  '@oxc-parser/binding-openharmony-arm@0.154.0',
+  '@oxc-parser/binding-openharmony-arm64@0.154.0',
+  '@oxc-parser/binding-openharmony-x64@0.154.0',
+  '@oxc-parser/binding-wasm32-wasi@0.154.0',
+  '@oxc-parser/binding-wasm32-wasip1@0.154.0',
+  '@oxc-parser/binding-win32-arm64-msvc@0.154.0',
+  '@oxc-parser/binding-win32-ia32-msvc@0.154.0',
+  '@oxc-parser/binding-win32-x64-gnu@0.154.0',
+  '@oxc-parser/binding-win32-x64-msvc@0.154.0',
+]
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
 const projectRoot = resolve(scriptDirectory, '..')
@@ -135,6 +224,7 @@ const violations = []
 let lockMigrationRequired = false
 
 const expectedDirectDependencies = [
+  ['@types/node', EXPECTED.nodeTypes],
   ['@nuxt/schema', EXPECTED.schema],
   ['@nuxt/test-utils', EXPECTED.testUtils],
   ['nuxt', EXPECTED.nuxt],
@@ -159,6 +249,7 @@ for (const [name, expectedVersion] of expectedDirectDependencies) {
 }
 
 for (const [name, expectedVersion] of [
+  ['@types/node', EXPECTED.nodeTypes],
   ['nuxt', EXPECTED.nuxt],
   ['rolldown', EXPECTED.rolldown],
   ['vite', EXPECTED.vite],
@@ -171,7 +262,137 @@ for (const [name, expectedVersion] of [
   }
 }
 
+for (const maturityExclude of REQUIRED_MATURITY_EXCLUDES) {
+  const expectedLine = `  - '${maturityExclude}'`
+  if (!workspaceContent.includes(expectedLine)) {
+    violations.push(`pnpm minimumReleaseAgeExclude must include the reviewed version-scoped entry ${maturityExclude}`)
+  }
+}
+
+function maturityExcludeLine(packageName) {
+  return `  - '${packageName}'`
+}
+
+if (workspaceContent.includes(maturityExcludeLine('@nuxt/*'))) {
+  violations.push('pnpm minimumReleaseAgeExclude must not use a broad @nuxt/* exemption; keep Patch022 exceptions version-scoped')
+}
+
+const forbiddenBroadTransitiveExcludes = [
+  '@unhead/*',
+  'unhead',
+  'my-bad',
+  'clickable-path',
+  'package-manager-detector',
+  'devalue',
+  'exsolve',
+  '@nuxt/cli',
+  '@nuxt/devtools',
+  '@nuxt/devtools-kit',
+  '@nuxt/devtools-wizard',
+  'hookable',
+  'ignore',
+  'std-env',
+  'vue-router',
+  'undici',
+  'vue-component-type-helpers',
+  'srvx',
+  '@unhead/bundler',
+  'oxc-parser',
+  '@oxc-project/types',
+  '@oxc-parser/binding-android-arm-eabi',
+  '@oxc-parser/binding-android-arm64',
+  '@oxc-parser/binding-darwin-arm64',
+  '@oxc-parser/binding-darwin-universal',
+  '@oxc-parser/binding-darwin-x64',
+  '@oxc-parser/binding-freebsd-arm64',
+  '@oxc-parser/binding-freebsd-x64',
+  '@oxc-parser/binding-linux-arm-gnueabihf',
+  '@oxc-parser/binding-linux-arm-musleabihf',
+  '@oxc-parser/binding-linux-arm64-gnu',
+  '@oxc-parser/binding-linux-arm64-musl',
+  '@oxc-parser/binding-linux-loong64-gnu',
+  '@oxc-parser/binding-linux-loong64-musl',
+  '@oxc-parser/binding-linux-ppc64-gnu',
+  '@oxc-parser/binding-linux-riscv64-gnu',
+  '@oxc-parser/binding-linux-riscv64-musl',
+  '@oxc-parser/binding-linux-s390x-gnu',
+  '@oxc-parser/binding-linux-x64-gnu',
+  '@oxc-parser/binding-linux-x64-musl',
+  '@oxc-parser/binding-openharmony-arm',
+  '@oxc-parser/binding-openharmony-arm64',
+  '@oxc-parser/binding-openharmony-x64',
+  '@oxc-parser/binding-wasm32-wasi',
+  '@oxc-parser/binding-wasm32-wasip1',
+  '@oxc-parser/binding-win32-arm64-msvc',
+  '@oxc-parser/binding-win32-ia32-msvc',
+  '@oxc-parser/binding-win32-x64-gnu',
+  '@oxc-parser/binding-win32-x64-msvc',
+  '@rolldown/binding-android-arm-eabi',
+  '@rolldown/binding-android-arm64',
+  '@rolldown/binding-darwin-arm64',
+  '@rolldown/binding-darwin-universal',
+  '@rolldown/binding-darwin-x64',
+  '@rolldown/binding-freebsd-arm64',
+  '@rolldown/binding-freebsd-x64',
+  '@rolldown/binding-linux-arm-gnueabihf',
+  '@rolldown/binding-linux-arm-musleabihf',
+  '@rolldown/binding-linux-arm64-gnu',
+  '@rolldown/binding-linux-arm64-musl',
+  '@rolldown/binding-linux-loong64-gnu',
+  '@rolldown/binding-linux-loong64-musl',
+  '@rolldown/binding-linux-ppc64-gnu',
+  '@rolldown/binding-linux-riscv64-gnu',
+  '@rolldown/binding-linux-riscv64-musl',
+  '@rolldown/binding-linux-s390x-gnu',
+  '@rolldown/binding-linux-x64-gnu',
+  '@rolldown/binding-linux-x64-musl',
+  '@rolldown/binding-openharmony-arm',
+  '@rolldown/binding-openharmony-arm64',
+  '@rolldown/binding-openharmony-x64',
+  '@rolldown/binding-wasm32-wasi',
+  '@rolldown/binding-win32-arm64-msvc',
+  '@rolldown/binding-win32-ia32-msvc',
+  '@rolldown/binding-win32-x64-gnu',
+  '@rolldown/binding-win32-x64-msvc',
+]
+
+for (const broadExclude of forbiddenBroadTransitiveExcludes) {
+  const broadExcludeLine = maturityExcludeLine(broadExclude)
+  if (workspaceContent.includes(broadExcludeLine)) {
+    violations.push(`pnpm minimumReleaseAgeExclude must not use broad transitive exemption ${broadExcludeLine.trim()}; keep Patch022 entries version-scoped`)
+  }
+}
+
+for (const forbiddenRolldownBypass of [
+  '@rolldown/*',
+  '@rolldown/binding-*',
+]) {
+  const forbiddenLine = maturityExcludeLine(forbiddenRolldownBypass)
+  if (workspaceContent.includes(forbiddenLine)) {
+    violations.push(`pnpm minimumReleaseAgeExclude must not use ${forbiddenLine.trim()}; enumerate the reviewed Rolldown 1.2.14 binding packages exactly`)
+  }
+}
+
+for (const forbiddenToolchainBypass of [
+  '@unhead/*',
+  '@oxc-parser/*',
+  '@oxc-project/*',
+]) {
+  const forbiddenLine = maturityExcludeLine(forbiddenToolchainBypass)
+  if (workspaceContent.includes(forbiddenLine)) {
+    violations.push(`pnpm minimumReleaseAgeExclude must not use ${forbiddenLine.trim()}; keep Unhead/Oxc Patch022 exceptions version-scoped`)
+  }
+}
+
+if (
+  workspaceContent.includes(maturityExcludeLine('@types/node'))
+  || workspaceContent.includes(maturityExcludeLine('@types/node@22.20.4'))
+) {
+  violations.push('@types/node@22.20.4 is already mature and must not bypass minimumReleaseAge')
+}
+
 const requiredPackageHeaders = [
+  `'@types/node@${EXPECTED.nodeTypes}':`,
   `'@nuxt/schema@${EXPECTED.schema}':`,
   `'@nuxt/test-utils@${EXPECTED.testUtils}':`,
   `nuxt@${EXPECTED.nuxt}:`,
@@ -225,7 +446,7 @@ if (violations.length > 0) {
     console.error(`- ${violation}`)
   }
   if (lockMigrationRequired) {
-    console.error('Run `pnpm install --no-frozen-lockfile` once for Patch 015, then rerun `pnpm verify`.')
+    console.error('Run `pnpm install --no-frozen-lockfile` once for Patch 022, then rerun `pnpm verify`.')
   }
   process.exitCode = 1
 }
