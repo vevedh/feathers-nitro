@@ -1,0 +1,106 @@
+name: Publish npm
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: npm-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.3
+          registry-url: https://registry.npmjs.org/
+
+      - name: Enable pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.34.5 --activate
+          pnpm --version
+
+      - name: Use npm 11 for trusted publishing
+        run: |
+          npm install --global npm@11
+          npm --version
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify release tag matches checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+          TAG="v${VERSION}"
+          git fetch --tags --force origin
+          TAG_SHA="$(git rev-list -n 1 "${TAG}")"
+          HEAD_SHA="$(git rev-parse HEAD)"
+          echo "package version: ${VERSION}"
+          echo "expected tag: ${TAG}"
+          echo "tag sha: ${TAG_SHA}"
+          echo "head sha: ${HEAD_SHA}"
+          if [ -z "${TAG_SHA}" ]; then
+            echo "::error::Missing release tag ${TAG}"
+            exit 1
+          fi
+          if [ "${TAG_SHA}" != "${HEAD_SHA}" ]; then
+            echo "::error::Release tag ${TAG} does not point to the checked-out commit"
+            exit 1
+          fi
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "${GITHUB_REF_NAME}" != "${TAG}" ]; then
+            echo "::error::Workflow tag ${GITHUB_REF_NAME} does not match package version ${TAG}"
+            exit 1
+          fi
+
+      - name: Refuse an already-published version
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+          if npm view "@vevedh/feathers-nitro@${VERSION}" version --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
+            echo "::error::@vevedh/feathers-nitro@${VERSION} is already published"
+            exit 1
+          fi
+
+      - name: Certify release
+        env:
+          FEATHERS_NITRO_TEST_CONCURRENCY: '4'
+        run: pnpm release:certify
+
+      - name: Publish to npm with trusted publishing
+        run: npm publish --access public --registry=https://registry.npmjs.org/
+
+      - name: Verify npm publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+          for attempt in 1 2 3 4 5 6; do
+            PUBLISHED="$(npm view @vevedh/feathers-nitro version --registry=https://registry.npmjs.org/ 2>/dev/null || true)"
+            if [ "${PUBLISHED}" = "${VERSION}" ]; then
+              echo "@vevedh/feathers-nitro@${VERSION} is published as latest"
+              exit 0
+            fi
+            echo "Registry propagation attempt ${attempt}/6: latest=${PUBLISHED:-unavailable}"
+            sleep 10
+          done
+          echo "::error::npm registry did not expose expected latest version ${VERSION}"
+          exit 1
